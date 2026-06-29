@@ -41,7 +41,7 @@ created: 2026-06-29
 | 01-auth-01 | auth | 1 | AUTH-01 | T-1-01 | Valid credentials → session + redirect to role home | Integration | `npx vitest run tests/auth.test.ts` | ❌ W0 | ⬜ pending |
 | 01-auth-02 | auth | 1 | AUTH-01 | T-1-01 | Invalid credentials → error message returned | Integration | `npx vitest run tests/auth.test.ts` | ❌ W0 | ⬜ pending |
 | 01-auth-03 | auth | 1 | AUTH-01 | T-1-01 | Deactivated user → login rejected | Integration | `npx vitest run tests/auth.test.ts` | ❌ W0 | ⬜ pending |
-| 01-auth-04 | auth | 1 | AUTH-02 | — | JWT cookie persists across simulated refresh | Unit | `npx vitest run tests/session.test.ts` | ❌ W0 | ⬜ pending |
+| 01-auth-04 | auth | 1 | AUTH-02 | — | JWT cookie persists across simulated refresh | Unit | `npx vitest run tests/auth.test.ts` | ❌ W0 | ⬜ pending |
 | 01-rbac-01 | auth | 2 | AUTH-03 | T-1-02 | STAFF accessing /dashboard → redirect to /inventory | Unit | `npx vitest run tests/middleware.test.ts` | ❌ W0 | ⬜ pending |
 | 01-rbac-02 | auth | 2 | AUTH-03 | T-1-02 | Unauthenticated → redirect to /login | Unit | `npx vitest run tests/middleware.test.ts` | ❌ W0 | ⬜ pending |
 | 01-rbac-03 | auth | 2 | AUTH-03 | T-1-02 | MANAGER accessing /dashboard → allowed | Unit | `npx vitest run tests/middleware.test.ts` | ❌ W0 | ⬜ pending |

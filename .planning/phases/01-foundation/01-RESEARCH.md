@@ -850,21 +850,24 @@ AUTH_SECRET="<output-from-openssl-above>"
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Next.js 15 vs 16 upgrade decision**
    - What we know: npm latest is Next.js 16.2.9; project locks to 15.x; next-15-3 tag = 15.5.19
    - What's unclear: Whether the team wants to use the locked 15.x or upgrade to 16 now (easier auth setup)
    - Recommendation: Stay with Next.js 15 as locked. Document that Next.js 16 (proxy.ts pattern) is available if the team upgrades before starting development.
+   - RESOLVED: Lock to Next.js 15 (`next@15.5.19`). The two-file auth.config.ts split is required and is the correct pattern for this version. Upgrading to Next.js 16 is deferred to v2.
 
 2. **AUTH_SECRET env variable naming**
    - What we know: Auth.js v5 looks for `AUTH_SECRET` by default (not `NEXTAUTH_SECRET`)
    - What's unclear: Railway auto-injects PostgreSQL as `DATABASE_URL` — `AUTH_SECRET` must be set manually
    - Recommendation: Document both env vars explicitly in the plan's Wave 0 environment setup task.
+   - RESOLVED: Use `AUTH_SECRET` (not `NEXTAUTH_SECRET`). Both `DATABASE_URL` and `AUTH_SECRET` are documented in `.env.example` and the Plan 01-02 environment setup task.
 
 3. **Prisma migrate dev vs db push for initial schema**
    - What we know: `migrate dev` creates migration files (essential for production); `db push` is faster for prototyping
    - Recommendation: Use `prisma migrate dev --name init` for the first migration to establish the migrations directory. Never use `db push` alone in this project — the Railway deployment will need migration files.
+   - RESOLVED: Use `npx prisma migrate dev --name init` for the initial migration (creates `/prisma/migrations/` directory needed for Railway deployment). `db push` is not used in this project. Plan 01-02 Task 1 uses `prisma migrate dev --name init`.
 
 ---
 
