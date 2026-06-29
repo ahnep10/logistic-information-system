@@ -76,23 +76,13 @@ AUTH-03 per D-01–D-05). Plan 01-01B builds the middleware, UI shell, and stub 
 <tasks>
 
 <task type="auto">
-  <name>Task 1: Scaffold Project + Install Dependencies + Auth Core Files</name>
+  <name>Task 1: Scaffold Project + Install Dependencies + Initialize Prisma and shadcn/ui</name>
   <files>
-    package.json,
-    auth.config.ts,
-    lib/auth.ts,
-    lib/prisma.ts,
-    types/next-auth.d.ts,
-    app/api/auth/[...nextauth]/route.ts,
-    lib/validations/auth.ts,
-    prisma/schema.prisma,
-    prisma/seed.ts,
-    .env.example
+    package.json
   </files>
   <read_first>
-    .planning/phases/01-foundation/01-RESEARCH.md — Pattern 1 (auth.config.ts / lib/auth.ts two-file split), Pattern 3 (Prisma singleton), Pattern 4 (schema.prisma), Pattern 5 (seed.ts), Standard Stack (exact package versions), Critical Version Notes, Common Pitfalls (Pitfall 1–4)
-    .planning/phases/01-foundation/01-PATTERNS.md — auth.config.ts, lib/auth.ts, lib/prisma.ts, prisma/schema.prisma, prisma/seed.ts, lib/validations/auth.ts pattern sections
-    .planning/phases/01-foundation/01-RESEARCH.md — Package Legitimacy Audit table (all packages approved)
+    .planning/phases/01-foundation/01-RESEARCH.md — Standard Stack (exact package versions), Critical Version Notes, Common Pitfalls (Pitfall 3: do not install @types/bcryptjs), Package Legitimacy Audit table
+    .planning/phases/01-foundation/01-UI-SPEC.md — Design System section (shadcn/ui style: New York, base color: Zinc, CSS variables: Yes; component list)
   </read_first>
   <action>
     STEP 1 — Scaffold Next.js 15 (NOT create-next-app@latest which installs v16):
@@ -111,7 +101,38 @@ AUTH-03 per D-01–D-05). Plan 01-01B builds the middleware, UI shell, and stub 
     Then run `npx shadcn@latest add button card form input label table badge dialog alert-dialog select avatar dropdown-menu separator`.
 
     STEP 5 — Update package.json with Prisma seed config and db scripts. Add a top-level "prisma" key with "seed": "tsx prisma/seed.ts". Add to "scripts": "db:seed": "prisma db seed", "db:migrate": "prisma migrate dev", "db:push": "prisma db push", "db:studio": "prisma studio".
+  </action>
+  <verify>
+    <automated>node -e "const p=require('./package.json');const d=p.dependencies||{};const s=p.scripts||{};if(!d.next)throw new Error('next missing');if(!d['@prisma/client'])throw new Error('@prisma/client missing');if(!s['db:seed'])throw new Error('db:seed script missing')" && ls prisma/schema.prisma components/ui/button.tsx && echo "PASS: Scaffold + deps installed"</automated>
+  </verify>
+  <acceptance_criteria>
+    - next, @prisma/client, next-auth, bcryptjs, react-hook-form, zod, @hookform/resolvers are in package.json dependencies
+    - tsx is in devDependencies; @types/bcryptjs is NOT in devDependencies
+    - package.json has "db:seed", "db:migrate", "db:push", "db:studio" in scripts and "prisma": { "seed": "tsx prisma/seed.ts" } at top level
+    - prisma/schema.prisma exists (created by prisma init — empty datasource block, will be overwritten in Task 2)
+    - components/ui/button.tsx exists (confirms shadcn/ui init ran successfully)
+  </acceptance_criteria>
+  <done>Next.js 15 project scaffolded; all production and dev dependencies installed; Prisma initialized; shadcn/ui components copied in; package.json db scripts configured</done>
+</task>
 
+<task type="auto">
+  <name>Task 2: Create Auth Core Files</name>
+  <files>
+    prisma/schema.prisma,
+    prisma/seed.ts,
+    auth.config.ts,
+    lib/auth.ts,
+    lib/prisma.ts,
+    types/next-auth.d.ts,
+    app/api/auth/[...nextauth]/route.ts,
+    lib/validations/auth.ts,
+    .env.example
+  </files>
+  <read_first>
+    .planning/phases/01-foundation/01-RESEARCH.md — Pattern 1 (auth.config.ts / lib/auth.ts two-file split), Pattern 3 (Prisma singleton), Pattern 4 (schema.prisma), Pattern 5 (seed.ts), Common Pitfalls (Pitfall 1–4)
+    .planning/phases/01-foundation/01-PATTERNS.md — auth.config.ts, lib/auth.ts, lib/prisma.ts, prisma/schema.prisma, prisma/seed.ts, lib/validations/auth.ts pattern sections
+  </read_first>
+  <action>
     STEP 6 — Overwrite prisma/schema.prisma with the User model (per PATTERNS.md Pattern 4):
     Generator block uses "prisma-client-js". Datasource uses DATABASE_URL env var for PostgreSQL.
     Define enum Role with values MANAGER and STAFF.
@@ -162,10 +183,9 @@ AUTH-03 per D-01–D-05). Plan 01-01B builds the middleware, UI shell, and stub 
     - lib/auth.ts does NOT import from middleware.ts or auth.config.ts directly in a way that bypasses the split
     - auth.config.ts has zero imports of bcryptjs or @prisma/client
     - prisma/seed.ts uses upsert (not create) to ensure idempotency
-    - package.json contains "db:seed": "prisma db seed" in scripts and "prisma": { "seed": "tsx prisma/seed.ts" } at top level
     - @types/bcryptjs is NOT in package.json devDependencies
   </acceptance_criteria>
-  <done>Project scaffolded with TypeScript-clean auth core; Prisma schema with User model and Role enum; Auth.js two-file split (auth.config.ts Edge-safe, lib/auth.ts Node.js-only); seed script uses bcryptjs cost factor 12</done>
+  <done>Auth core complete: Prisma schema with User model and Role enum; Auth.js two-file split (auth.config.ts Edge-safe, lib/auth.ts Node.js-only); Prisma singleton; type augmentation; seed script with bcryptjs cost factor 12; prisma generate runs clean</done>
 </task>
 
 </tasks>
