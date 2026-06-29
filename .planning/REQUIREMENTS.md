@@ -89,41 +89,41 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| PROD-01 | — | Pending |
-| PROD-02 | — | Pending |
-| PROD-03 | — | Pending |
-| PROD-04 | — | Pending |
-| SUPL-01 | — | Pending |
-| SUPL-02 | — | Pending |
-| SUPL-03 | — | Pending |
-| SUPL-04 | — | Pending |
-| INVT-01 | — | Pending |
-| INVT-02 | — | Pending |
-| INVT-03 | — | Pending |
-| INVT-04 | — | Pending |
-| INVT-05 | — | Pending |
-| INVT-06 | — | Pending |
-| PROC-01 | — | Pending |
-| PROC-02 | — | Pending |
-| PROC-03 | — | Pending |
-| PROC-04 | — | Pending |
-| PROC-05 | — | Pending |
-| DASH-01 | — | Pending |
-| DASH-02 | — | Pending |
-| DASH-03 | — | Pending |
-| REPT-01 | — | Pending |
-| REPT-02 | — | Pending |
-| REPT-03 | — | Pending |
-| REPT-04 | — | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| PROD-01 | Phase 2 | Pending |
+| PROD-02 | Phase 2 | Pending |
+| PROD-03 | Phase 2 | Pending |
+| PROD-04 | Phase 2 | Pending |
+| SUPL-01 | Phase 2 | Pending |
+| SUPL-02 | Phase 2 | Pending |
+| SUPL-03 | Phase 2 | Pending |
+| SUPL-04 | Phase 2 | Pending |
+| INVT-01 | Phase 3 | Pending |
+| INVT-02 | Phase 3 | Pending |
+| INVT-03 | Phase 3 | Pending |
+| INVT-04 | Phase 3 | Pending |
+| INVT-05 | Phase 3 | Pending |
+| INVT-06 | Phase 3 | Pending |
+| PROC-01 | Phase 4 | Pending |
+| PROC-02 | Phase 4 | Pending |
+| PROC-03 | Phase 4 | Pending |
+| PROC-04 | Phase 4 | Pending |
+| PROC-05 | Phase 4 | Pending |
+| DASH-01 | Phase 5 | Pending |
+| DASH-02 | Phase 5 | Pending |
+| DASH-03 | Phase 5 | Pending |
+| REPT-01 | Phase 6 | Pending |
+| REPT-02 | Phase 6 | Pending |
+| REPT-03 | Phase 6 | Pending |
+| REPT-04 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 29 total
-- Mapped to phases: 0 (updated during roadmap creation)
-- Unmapped: 29 ⚠️
+- Mapped to phases: 29
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-29*
-*Last updated: 2026-06-29 after initial definition*
+*Last updated: 2026-06-29 — phase assignments added after roadmap creation*
