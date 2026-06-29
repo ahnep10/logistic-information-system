@@ -2,7 +2,7 @@
 phase: 01-foundation
 plan: "01B"
 type: execute
-wave: 1
+wave: 2
 depends_on:
   - "01-01A"
 files_modified:
