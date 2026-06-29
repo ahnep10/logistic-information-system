@@ -31,7 +31,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Logged-in session persists after browser refresh without prompting re-login.
   3. A Manager role can navigate to all modules; a Staff role attempting to access a manager-only page receives a 403 Forbidden response.
   4. Every protected route returns 401/403 when accessed without a valid session token — enforced at middleware, not only in UI.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Walking skeleton: scaffold, Auth.js two-file split, middleware RBAC, login page, app shell, sidebar, stub routes
+- [ ] 01-02-PLAN.md — DB initialization: configure .env, prisma db push, db:seed, end-to-end browser login verify [BLOCKING human]
+- [ ] 01-03-PLAN.md — Test scaffolding: Vitest install, vitest.config.ts, 12 test stubs across 5 files (Wave 0 coverage)
+- [ ] 01-04-PLAN.md — User management + profile: createUser/updateUser/toggleActive Server Actions, /users CRUD page, /profile password change
+
 **UI hint**: yes
 
 ### Phase 2: Catalog
