@@ -7,6 +7,7 @@ A six-phase MVP build ordered strictly by foreign-key dependency chains. Auth is
 ## Phases
 
 **Phase Numbering:**
+
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
@@ -22,89 +23,115 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Phase Details
 
 ### Phase 1: Foundation
+
 **Goal**: Users can securely access the system with role-based permissions enforced server-side on every protected route.
 **Mode:** mvp
 **Depends on**: Nothing (first phase)
 **Requirements**: AUTH-01, AUTH-02, AUTH-03
 **Success Criteria** (what must be TRUE):
+
   1. A user can log in with email and password and land on a role-appropriate home page.
   2. Logged-in session persists after browser refresh without prompting re-login.
   3. A Manager role can navigate to all modules; a Staff role attempting to access a manager-only page receives a 403 Forbidden response.
   4. Every protected route returns 401/403 when accessed without a valid session token — enforced at middleware, not only in UI.
+
 **Plans**: 4 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 01-01-PLAN.md — Walking skeleton: scaffold, Auth.js two-file split, middleware RBAC, login page, app shell, sidebar, stub routes
+
+**Wave 3** *(blocked on Wave 1 completion)*
+
 - [ ] 01-02-PLAN.md — DB initialization: configure .env, prisma db push, db:seed, end-to-end browser login verify [BLOCKING human]
 - [ ] 01-03-PLAN.md — Test scaffolding: Vitest install, vitest.config.ts, 12 test stubs across 5 files (Wave 0 coverage)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 01-04-PLAN.md — User management + profile: createUser/updateUser/toggleActive Server Actions, /users CRUD page, /profile password change
 
 **UI hint**: yes
 
 ### Phase 2: Catalog
+
 **Goal**: Admins and staff can maintain the product and supplier master data that all downstream transactions and purchase orders depend on.
 **Mode:** mvp
 **Depends on**: Phase 1
 **Requirements**: PROD-01, PROD-02, PROD-03, PROD-04, SUPL-01, SUPL-02, SUPL-03, SUPL-04
 **Success Criteria** (what must be TRUE):
+
   1. Admin can create a product with name, SKU, category, and reorder threshold; duplicate SKUs are rejected with a clear error.
   2. Admin can edit product details and soft-deactivate a product; deactivated products retain all historical data.
   3. Product list shows the current stock level and a severity tier (Critical / Warning / OK) for every product.
   4. Staff can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved.
   5. Supplier list can be filtered by active/inactive status.
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 3: Warehouse
+
 **Goal**: Warehouse staff can record every stock movement, and all users can view real-time inventory levels and movement history with automatic low-stock flagging.
 **Mode:** mvp
 **Depends on**: Phase 2
 **Requirements**: INVT-01, INVT-02, INVT-03, INVT-04, INVT-05, INVT-06
 **Success Criteria** (what must be TRUE):
+
   1. Staff can record a stock-in transaction (product, quantity, reason) and see the product's stock level update immediately.
   2. Staff can record a stock-out transaction; the system rejects the transaction if it would result in negative stock.
   3. Any product at or below its reorder threshold is automatically flagged as low-stock without manual intervention.
   4. User can view the full stock movement history for any product, filterable by date range.
   5. Every product in the inventory list displays a color-coded severity tier (Critical / Warning / OK) based on proximity to the reorder threshold.
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 4: Procurement
+
 **Goal**: Staff can manage the complete purchase order lifecycle — from creating a draft PO through goods receipt — with the receipt atomically updating both PO status and inventory in a single database transaction.
 **Mode:** mvp
 **Depends on**: Phase 3
 **Requirements**: PROC-01, PROC-02, PROC-03, PROC-04, PROC-05
 **Success Criteria** (what must be TRUE):
+
   1. Staff can create a Draft PO selecting a supplier and adding multiple line items (product, quantity, unit price).
   2. Staff can confirm a Draft PO to advance it to Ordered status; confirmed PO line items can no longer be edited.
   3. Staff can receive goods against an Ordered PO in a single action that simultaneously marks the PO as Received and creates a corresponding stock-in transaction.
   4. A Received PO is fully immutable — no further status changes or edits are possible after receipt.
   5. PO list is filterable by status (Draft / Ordered / Received) and each PO shows its line items with computed total value on the detail page.
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 5: Dashboard
+
 **Goal**: Managers can see a single real-time dashboard that surfaces operational health — inventory status, procurement activity, and low-stock alerts — at a glance.
 **Mode:** mvp
 **Depends on**: Phase 4
 **Requirements**: DASH-01, DASH-02, DASH-03
 **Success Criteria** (what must be TRUE):
+
   1. Dashboard displays four live KPI tiles: total active products, total active suppliers, stock movements recorded today, and count of low-stock items.
   2. Clicking the low-stock count tile navigates to the inventory list pre-filtered to show only low-stock products.
   3. Dashboard shows a PO status summary panel with the count of POs in each status (Draft, Ordered, Received).
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 6: Reports
+
 **Goal**: Managers can generate operational reports for inventory, stock movements, and purchase orders, and export any report as an Excel file for offline sharing.
 **Mode:** mvp
 **Depends on**: Phase 5
 **Requirements**: REPT-01, REPT-02, REPT-03, REPT-04
 **Success Criteria** (what must be TRUE):
+
   1. Manager can view an inventory report showing current stock level and severity tier for all products.
   2. Manager can view a stock movement report for a selected date range, with transactions grouped by product.
   3. Manager can view a PO report listing all purchase orders with their status, supplier, and total order value.
   4. Manager can export any of the three reports as a downloadable .xlsx file.
+
 **Plans**: TBD
 **UI hint**: yes
 
