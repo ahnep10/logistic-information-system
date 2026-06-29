@@ -1,0 +1,129 @@
+# Requirements: Logistics MIS
+
+**Defined:** 2026-06-29
+**Core Value:** Give managers a single real-time source of truth for inventory and procurement so they can make faster, data-driven decisions, reduce stock shortages, and improve operational efficiency.
+
+## v1 Requirements
+
+### Authentication & Access
+
+- [ ] **AUTH-01**: User can log in with email and password
+- [ ] **AUTH-02**: User session persists across browser refresh without re-login
+- [ ] **AUTH-03**: Manager role can access dashboard, reports, and all modules; staff role can perform operational transactions; system enforces roles server-side on every protected route
+
+### Product Catalog
+
+- [ ] **PROD-01**: Admin can create a product with name, SKU, category, and reorder threshold
+- [ ] **PROD-02**: Admin can edit product details (name, category, reorder threshold)
+- [ ] **PROD-03**: Admin can deactivate a product (soft-delete; does not remove history)
+- [ ] **PROD-04**: User can view the product list showing current stock level and stock severity tier (Critical / Warning / OK) based on threshold proximity
+
+### Supplier Management
+
+- [ ] **SUPL-01**: Staff can create a supplier profile (name, contact person, phone, email, address)
+- [ ] **SUPL-02**: Staff can edit supplier details
+- [ ] **SUPL-03**: Staff can deactivate a supplier (soft-delete; preserves linked PO history)
+- [ ] **SUPL-04**: User can view the supplier list with active/inactive filter
+
+### Warehouse & Inventory
+
+- [ ] **INVT-01**: Staff can record a stock-in transaction with product, quantity, and reason category (purchase, return, adjustment)
+- [ ] **INVT-02**: Staff can record a stock-out transaction with product, quantity, and reason category (sale, adjustment, write-off)
+- [ ] **INVT-03**: System maintains current stock level per product, updated atomically on each transaction (no negative stock permitted at DB level)
+- [ ] **INVT-04**: System automatically flags any product whose stock level is at or below its reorder threshold
+- [ ] **INVT-05**: User can view full stock movement history per product, filterable by date range
+- [ ] **INVT-06**: Stock levels display a severity tier indicator (Critical / Warning / OK) to reduce cognitive load when scanning inventory
+
+### Procurement & Purchase Orders
+
+- [ ] **PROC-01**: Staff can create a purchase order in Draft status, selecting a supplier and adding line items (product + quantity + unit price)
+- [ ] **PROC-02**: Staff can edit a Draft PO and confirm it, advancing status to Ordered
+- [ ] **PROC-03**: Staff can receive goods against an Ordered PO, advancing status to Received; the goods receipt atomically creates a stock-in transaction and updates inventory in a single DB transaction
+- [ ] **PROC-04**: Received PO is immutable; no further status changes permitted after Received
+- [ ] **PROC-05**: User can view the full PO list with status filter (Draft / Ordered / Received) and PO detail with line items
+
+### Management Dashboard
+
+- [ ] **DASH-01**: Manager sees a dashboard with real-time KPIs: total active products, total active suppliers, stock movements recorded today, and count of low-stock items
+- [ ] **DASH-02**: Low-stock item count on dashboard is clickable and drills into the filtered inventory list showing only low-stock products
+- [ ] **DASH-03**: Dashboard shows a PO status summary (count of POs in each status: Draft, Ordered, Received)
+
+### Reports
+
+- [ ] **REPT-01**: Manager can generate an inventory report showing current stock level and severity tier for all products
+- [ ] **REPT-02**: Manager can generate a stock movement report showing all transactions over a selected date range, grouped by product
+- [ ] **REPT-03**: Manager can generate a purchase order report showing all POs with status, supplier, and total order value
+- [ ] **REPT-04**: Manager can export any report as an Excel (.xlsx) file for offline sharing and further analysis
+
+## v2 Requirements
+
+### Dashboard Enhancements
+
+- **DASH-V2-01**: Dashboard data auto-refreshes in real time without a page reload
+- **DASH-V2-02**: Trend sparklines on KPI cards showing movement over the past 7 days
+
+### Reporting Enhancements
+
+- **REPT-V2-01**: PDF export for all reports (significant rendering complexity deferred)
+- **REPT-V2-02**: Per-product movement mini-history widget embedded on the product detail page
+
+### Procurement Automation
+
+- **PROC-V2-01**: System automatically generates a Draft PO when a product drops below its reorder threshold (requires approval-workflow design)
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Delivery / shipment tracking | Excluded to keep MVP achievable within one academic semester |
+| Multi-warehouse support | Single warehouse is sufficient for SME MVP; adds significant schema complexity |
+| ERP / external system integration | Not required by target SME segment; adds deployment and security complexity |
+| Customer-facing portal | Internal operations tool only; customers not in scope |
+| Invoicing and billing | Finance module beyond MIS scope; would require separate accounting logic |
+| Barcode scanning | Hardware dependency; not required for SME-scale manual operations |
+| Email / SMS notifications | External service dependency; low-stock dashboard alerts cover the need in MVP |
+| Demand forecasting | Requires historical data and ML — post-MVP capability |
+| Mobile native app | Web-based only; responsive design covers mobile browser access |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| AUTH-01 | — | Pending |
+| AUTH-02 | — | Pending |
+| AUTH-03 | — | Pending |
+| PROD-01 | — | Pending |
+| PROD-02 | — | Pending |
+| PROD-03 | — | Pending |
+| PROD-04 | — | Pending |
+| SUPL-01 | — | Pending |
+| SUPL-02 | — | Pending |
+| SUPL-03 | — | Pending |
+| SUPL-04 | — | Pending |
+| INVT-01 | — | Pending |
+| INVT-02 | — | Pending |
+| INVT-03 | — | Pending |
+| INVT-04 | — | Pending |
+| INVT-05 | — | Pending |
+| INVT-06 | — | Pending |
+| PROC-01 | — | Pending |
+| PROC-02 | — | Pending |
+| PROC-03 | — | Pending |
+| PROC-04 | — | Pending |
+| PROC-05 | — | Pending |
+| DASH-01 | — | Pending |
+| DASH-02 | — | Pending |
+| DASH-03 | — | Pending |
+| REPT-01 | — | Pending |
+| REPT-02 | — | Pending |
+| REPT-03 | — | Pending |
+| REPT-04 | — | Pending |
+
+**Coverage:**
+- v1 requirements: 29 total
+- Mapped to phases: 0 (updated during roadmap creation)
+- Unmapped: 29 ⚠️
+
+---
+*Requirements defined: 2026-06-29*
+*Last updated: 2026-06-29 after initial definition*
