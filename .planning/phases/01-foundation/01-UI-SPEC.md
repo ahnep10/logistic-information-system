@@ -1,10 +1,11 @@
 ---
 phase: 1
 slug: foundation
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-06-29
+reviewed_at: 2026-06-29
 ---
 
 # Phase 1 — UI Design Contract
@@ -67,11 +68,11 @@ Declared values — all multiples of 4:
 | Role | Size | Weight | Line Height | Tailwind | Usage |
 |------|------|--------|-------------|----------|-------|
 | Body | 14px | 400 regular | 1.5 | `text-sm font-normal` | Table cell data, form input values, dialog body copy |
-| Label | 12px | 500 medium | 1.4 | `text-xs font-medium` | Form field labels, table column headers, badge text, sidebar muted text |
+| Label | 12px | 600 semibold | 1.4 | `text-xs font-semibold` | Form field labels, table column headers, badge text, sidebar muted text |
 | Heading | 20px | 600 semibold | 1.3 | `text-xl font-semibold` | Dialog titles, card section headings |
 | Page Title | 24px | 600 semibold | 1.2 | `text-2xl font-semibold` | H1 per authenticated page (Users, Profile) |
 
-**Note on weight:** `font-medium` (500) is used only for Labels. All other non-body text uses `font-semibold` (600). This keeps the weight vocabulary tight — body (400), labels (500), headings (600).
+**Note on weight:** Exactly 2 weights in use — 400 regular (body) and 600 semibold (labels, headings, page titles). No weight 500/font-medium anywhere in Phase 1.
 
 **Pre-populated from:** CONTEXT.md D-10 (professional admin MIS aesthetic). Standard choice for data-dense internal admin tools.
 
@@ -146,6 +147,8 @@ npx shadcn@latest add button card form input label table badge dialog alert-dial
 
 **Route:** `/login` — unauthenticated access only. Redirect to role home if already authenticated.
 
+**Focal point:** Sign in button — full-width accent (`bg-blue-600`), anchored at the bottom of the centered Card. The eye naturally lands here after scanning the two input fields above it.
+
 **Layout:** Full-screen, `min-h-screen flex items-center justify-center bg-zinc-50`. No sidebar.
 
 **Structure:**
@@ -175,6 +178,8 @@ npx shadcn@latest add button card form input label table badge dialog alert-dial
 ### Screen 2: App Shell — Authenticated Layout Wrapper
 
 **Applies to:** All routes except `/login`. Implemented as Next.js App Router layout (`app/(authenticated)/layout.tsx` or similar).
+
+**Focal point:** Active sidebar nav item — the `border-l-2 border-blue-600` left-edge accent on `bg-slate-800` is the only blue element in the dark sidebar, immediately communicating current location against the slate-900 background.
 
 **Root structure:**
 ```
@@ -234,6 +239,8 @@ Avatar (initials from name) + user name (text-sm text-slate-100) + role (text-xs
 
 **Access:** MANAGER only. Middleware returns 403 and redirects STAFF to `/inventory` on direct access (D-08).
 
+**Focal point:** "Create user" button — accent (`bg-blue-600`) in the top-right of the page header. The only accent element on this page when data is present; draws the manager's eye to the primary action before scanning the table.
+
 **Layout:**
 ```
 [Page content — p-6]
@@ -271,7 +278,7 @@ Dialog
       ├── Role Select [label: "Role", options: Manager / Staff]
       ├── Password input [label: "Password", type: password]
       └── DialogFooter
-            ├── Button "Cancel" [outline]
+            ├── Button "Discard" [outline]
             └── Button "Create user" [accent, shows spinner on submit]
 ```
 
@@ -288,7 +295,7 @@ Dialog
       ├── "Reset Password" label [text-sm font-medium text-zinc-700]
       ├── New Password input [label: "New password", type: password, optional]
       └── DialogFooter
-            ├── Button "Cancel" [outline]
+            ├── Button "Discard changes" [outline]
             └── Button "Save changes" [accent, shows spinner on submit]
 ```
 
@@ -301,8 +308,8 @@ AlertDialog
 │           "This user will immediately lose access to the system.
 │            You can reactivate them at any time from this page."
 └── AlertDialogFooter
-      ├── AlertDialogCancel: "Cancel"
-      └── AlertDialogAction [destructive]: "Deactivate"
+      ├── AlertDialogCancel: "Keep active"
+      └── AlertDialogAction [destructive]: "Deactivate user"
 ```
 
 **Empty state (no users in table):**
@@ -319,6 +326,8 @@ Table with single row spanning all columns:
 ### Screen 4: Profile / Settings Page (`/profile`)
 
 **Access:** All authenticated users (MANAGER and STAFF).
+
+**Focal point:** "Update password" button — accent (`bg-blue-600`), bottom of the password form Card. The page has a single purpose; the button is the only interactive anchor after the three password fields.
 
 **Layout:**
 ```
@@ -353,10 +362,13 @@ Table with single row spanning all columns:
 | Create user dialog title | "Create user" | Matches CTA |
 | Edit user dialog title | "Edit user" | Matches action |
 | Create user form submit | "Create user" | Matches dialog title |
+| Create user dialog dismiss | "Discard" | Intent-specific — blocked generic "Cancel" label |
 | Edit user form submit | "Save changes" | Generic update confirmation |
+| Edit user dialog dismiss | "Discard changes" | Intent-specific — blocked generic "Cancel" label |
 | Deactivate confirmation title | "Deactivate [Name]?" | Personalized with user name |
 | Deactivate confirmation body | "This user will immediately lose access to the system. You can reactivate them at any time from this page." | CONTEXT.md D-09 — no ambiguity about severity |
-| Deactivate confirm action | "Deactivate" | Matches title verb |
+| Deactivate cancel action | "Keep active" | Intent-specific — clarifies what "cancel" means in a destructive context |
+| Deactivate confirm action | "Deactivate user" | Verb + noun — strict consistency with verb+noun pattern |
 | Users empty state heading | "No users found" | Neutral empty state |
 | Users empty state body | "Create the first user account to get started." | Next step guidance |
 | Profile page H1 | "Profile" | Standard |
