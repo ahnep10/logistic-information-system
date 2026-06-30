@@ -71,7 +71,15 @@ Plans:
   4. Staff can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved.
   5. Supplier list can be filtered by active/inactive status.
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Prisma schema extension (Category, Product, Supplier) + DB push [BLOCKING]
+- [ ] 02-02-PLAN.md — Severity helper, Zod schemas (category/product/supplier), shadcn textarea+tabs, test scaffold
+- [ ] 02-03-PLAN.md — Categories full CRUD (Server Actions + page + client component)
+- [ ] 02-04-PLAN.md — Products full CRUD with severity badge (Server Actions + page + client component)
+- [ ] 02-05-PLAN.md — Suppliers full CRUD with tabs filter (Server Actions + page + client component)
+
 **UI hint**: yes
 
 ### Phase 3: Warehouse
