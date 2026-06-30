@@ -202,7 +202,7 @@ function CreateProductDialog({ categories }: { categories: Category[] }) {
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<CreateProductInput>({
-    resolver: zodResolver(createProductSchema),
+    resolver: zodResolver(createProductSchema) as any,
     defaultValues: { name: "", sku: "", categoryId: "", reorderThreshold: 0 },
   })
 
@@ -214,7 +214,7 @@ function CreateProductDialog({ categories }: { categories: Category[] }) {
     fd.append("categoryId", values.categoryId)
     fd.append("reorderThreshold", String(values.reorderThreshold))
     const result = await createProduct(fd)
-    if (result?.error) {
+    if (result && "error" in result && result.error) {
       if (result.error === "SKU already exists.") {
         form.setError("sku", { message: "SKU already exists" })
       } else {
@@ -365,7 +365,7 @@ function EditProductDialog({
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<UpdateProductInput>({
-    resolver: zodResolver(updateProductSchema),
+    resolver: zodResolver(updateProductSchema) as any,
     defaultValues: {
       id: product.id,
       name: product.name,
@@ -389,7 +389,7 @@ function EditProductDialog({
     fd.append("categoryId", values.categoryId)
     fd.append("reorderThreshold", String(values.reorderThreshold))
     const result = await updateProduct(fd)
-    if (result?.error) {
+    if (result && "error" in result && result.error) {
       if (result.error === "SKU already exists.") {
         form.setError("sku", { message: "SKU already exists" })
       } else {
@@ -533,7 +533,7 @@ function DeactivateProductDialog({ product }: { product: Product }) {
     setToggleError(null)
     try {
       const result = await toggleProductActive(product.id, false)
-      if (result?.error) {
+      if (result && "error" in result && result.error) {
         setToggleError(result.error)
       }
     } catch {
@@ -591,7 +591,7 @@ function ReactivateProductDialog({ product }: { product: Product }) {
     setToggleError(null)
     try {
       const result = await toggleProductActive(product.id, true)
-      if (result?.error) {
+      if (result && "error" in result && result.error) {
         setToggleError(result.error)
       }
     } catch {

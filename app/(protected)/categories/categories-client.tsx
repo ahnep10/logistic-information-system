@@ -155,7 +155,7 @@ function CreateCategoryDialog() {
     const fd = new FormData()
     fd.append("name", values.name)
     const result = await createCategory(fd)
-    if (result?.error) {
+    if (result && "error" in result && result.error) {
       setServerError(result.error)
       return
     }
@@ -227,7 +227,7 @@ function EditCategoryDialog({ category }: { category: Category }) {
     fd.append("id", values.id)
     fd.append("name", values.name)
     const result = await updateCategory(fd)
-    if (result?.error) {
+    if (result && "error" in result && result.error) {
       setServerError(result.error)
       return
     }
@@ -298,7 +298,7 @@ function DeactivateCategoryDialog({ category }: { category: Category }) {
     setToggleError(null)
     try {
       const result = await toggleCategoryActive(category.id, false)
-      if (result?.error) {
+      if (result && "error" in result && result.error) {
         setToggleError(result.error)
       }
     } catch {
@@ -356,7 +356,7 @@ function ReactivateCategoryDialog({ category }: { category: Category }) {
     setToggleError(null)
     try {
       const result = await toggleCategoryActive(category.id, true)
-      if (result?.error) {
+      if (result && "error" in result && result.error) {
         setToggleError(result.error)
       }
     } catch {

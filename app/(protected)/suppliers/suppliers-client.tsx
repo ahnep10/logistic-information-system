@@ -204,7 +204,7 @@ function CreateSupplierDialog() {
     const fd = new FormData()
     Object.entries(values).forEach(([k, v]) => fd.append(k, String(v)))
     const result = await createSupplier(fd)
-    if (result?.error) {
+    if (result && "error" in result && result.error) {
       setServerError(typeof result.error === "string" ? result.error : "An error occurred.")
       return
     }
@@ -337,7 +337,7 @@ function EditSupplierDialog({ supplier }: { supplier: Supplier }) {
     fd.append("email", values.email)
     fd.append("address", values.address)
     const result = await updateSupplier(fd)
-    if (result?.error) {
+    if (result && "error" in result && result.error) {
       setServerError(typeof result.error === "string" ? result.error : "An error occurred.")
       return
     }
@@ -462,7 +462,7 @@ function DeactivateSupplierDialog({ supplier }: { supplier: Supplier }) {
     setToggleError(null)
     try {
       const result = await toggleSupplierActive(supplier.id, false)
-      if (result?.error) {
+      if (result && "error" in result && result.error) {
         setToggleError(result.error)
       }
     } catch {
@@ -515,7 +515,7 @@ function ReactivateSupplierDialog({ supplier }: { supplier: Supplier }) {
     setToggleError(null)
     try {
       const result = await toggleSupplierActive(supplier.id, true)
-      if (result?.error) {
+      if (result && "error" in result && result.error) {
         setToggleError(result.error)
       }
     } catch {
