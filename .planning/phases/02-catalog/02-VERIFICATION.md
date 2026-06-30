@@ -1,19 +1,17 @@
 ---
 phase: 02-catalog
 verified: 2026-06-30T00:00:00Z
-status: gaps_found
-score: 4/5 must-haves verified
+status: human_needed
+score: 5/5 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
-gaps:
-  - truth: "Staff can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved"
-    status: failed
-    reason: "All three supplier mutations (createSupplier, updateSupplier, toggleSupplierActive) call requireManager() and throw 'Unauthorized — Manager role required' for non-MANAGER sessions. ROADMAP SC4 says 'Staff can...' but the code enforces MANAGER-only. This is a documented intentional design decision in CONTEXT.md ('SUPL-01/02/03 role conflict: CONTEXT.md Manager-only decision overrides REQUIREMENTS.md Staff wording') but the ROADMAP SC was never updated to reflect it. PO history preservation is also untestable (Phase 4 PO tables do not exist yet)."
-    artifacts:
-      - path: "actions/suppliers.ts"
-        issue: "requireManager() at lines 10-16 enforces MANAGER role on all three mutations; Staff role throws before any DB write"
-    missing:
-      - "Either: (a) relax requireManager() to allow Staff in supplier mutations, OR (b) add an override to this VERIFICATION.md frontmatter accepting the Manager-only deviation, OR (c) update ROADMAP Phase 2 SC4 wording from 'Staff can' to 'Manager can'"
+re_verification:
+  previous_status: gaps_found
+  previous_score: 4/5
+  gaps_closed:
+    - "ROADMAP SC4 updated from 'Staff can' to 'Manager can' — code (requireManager on all three supplier mutations) and SC4 are now consistent"
+  gaps_remaining: []
+  regressions: []
 human_verification:
   - test: "Log in as Staff user, navigate to /suppliers — verify that the page table and Tabs filter render (read-only access) and that no Create/Edit/Deactivate buttons appear"
     expected: "Supplier list visible with All/Active/Inactive tabs; no action buttons in rows; no Create supplier button in header"
@@ -36,8 +34,8 @@ human_verification:
 
 **Phase Goal:** Admins and staff can maintain the product and supplier master data that all downstream transactions and purchase orders depend on.
 **Verified:** 2026-06-30
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Status:** human_needed
+**Re-verification:** Yes — after SC4 gap closure (ROADMAP SC4 updated from "Staff can" to "Manager can")
 
 ## Goal Achievement
 
@@ -48,12 +46,14 @@ human_verification:
 | 1 | Admin can create a product with name, SKU, category, and reorder threshold; duplicate SKUs are rejected with a clear error | VERIFIED | `actions/products.ts`: `createProduct` calls `createProductSchema.safeParse` then `prisma.product.findUnique({ where: { sku } })`, returns `{ error: "SKU already exists." }` on collision. Client `products-client.tsx` line 219-221 routes this error to `form.setError("sku", ...)` for field-level display. |
 | 2 | Admin can edit product details and soft-deactivate a product; deactivated products retain all historical data | VERIFIED | `updateProduct` and `toggleProductActive` exist in `actions/products.ts`. No `prisma.product.delete()` call anywhere. `currentStock` is excluded from both `createProductSchema` and `updateProductSchema` (confirmed in `lib/validations/product.ts`). Prisma create/update data objects also omit `currentStock` (lines 47-54, 91-98). |
 | 3 | Product list shows the current stock level and a severity tier (Critical / Warning / OK) for every product | VERIFIED | `products-client.tsx` line 139-142: `const severity = getSeverityBadge(product.currentStock, product.reorderThreshold)`. Rendered as `<Badge className={severity.className}>{severity.label}</Badge>`. Imports `getSeverityBadge` from `@/lib/utils/severity` (not reimplemented). 8-column table header confirmed: Name, SKU, Category, Threshold, Stock, Severity, Status, Actions. |
-| 4 | Staff can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved | FAILED | `actions/suppliers.ts` lines 10-16 define `requireManager()` which throws `Error("Unauthorized — Manager role required")` for non-MANAGER sessions. All three mutations call `await requireManager()` at entry. Staff role cannot create, edit, or deactivate suppliers. Documented override from CONTEXT.md, but ROADMAP SC wording was not updated. PO history preservation untestable (Phase 4 tables absent). |
-| 5 | Supplier list can be filtered by active/inactive status | VERIFIED | `suppliers-client.tsx` line 78: `type FilterTab = "all" | "active" | "inactive"`. Line 81: `useState<FilterTab>("all")`. Lines 83-87: `visibleSuppliers` filter logic. Tabs component with `TabsTrigger` values "all", "active", "inactive". Tab-aware empty states at lines 130-155 (three distinct branches per filter value). |
+| 4 | Manager can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved | VERIFIED | `actions/suppliers.ts` lines 10-16: `requireManager()` throws `Error("Unauthorized — Manager role required")` for non-MANAGER sessions. All three mutations (`createSupplier` line 19, `updateSupplier` line 47, `toggleSupplierActive` line 77) call `await requireManager()` at entry. ROADMAP SC4 now reads "Manager can..." — code and SC are consistent. PO history preservation deferred to Phase 4 (see Deferred Items). |
+| 5 | Supplier list can be filtered by active/inactive status | VERIFIED | `suppliers-client.tsx` line 78: `type FilterTab = "all" \| "active" \| "inactive"`. Line 81: `useState<FilterTab>("all")`. Lines 83-87: `visibleSuppliers` filter logic. Tabs component with `TabsTrigger` values "all", "active", "inactive". Tab-aware empty states at lines 130-155 (three distinct branches per filter value). |
 
-**Score:** 4/5 truths verified (SC4 failed — role restriction mismatch)
+**Score:** 5/5 truths verified
 
 ### Deferred Items
+
+Items not yet met but explicitly addressed in later milestone phases.
 
 | # | Item | Addressed In | Evidence |
 |---|------|-------------|----------|
@@ -70,14 +70,14 @@ human_verification:
 | `lib/validations/supplier.ts` | Zod schemas for supplier | VERIFIED | All five fields required (name, contactPerson, phone, email with `.email()`, address). No nullable fields |
 | `actions/categories.ts` | Category Server Actions | VERIFIED | `createCategory`, `updateCategory`, `toggleCategoryActive` all exported. `requireManager()` defined inline (not exported). Case-insensitive `mode: "insensitive"` on findFirst. `NOT: { id }` exclusion on update uniqueness check. No `prisma.category.delete()` |
 | `actions/products.ts` | Product Server Actions | VERIFIED | `createProduct`, `updateProduct`, `toggleProductActive` all exported. `requireManager()` inline. SKU uniqueness via `findUnique` (create) and `findFirst` with `NOT: { id }` (update). Active category validation step in both create and update. `currentStock` excluded from all Prisma data objects |
-| `actions/suppliers.ts` | Supplier Server Actions | VERIFIED | `createSupplier`, `updateSupplier`, `toggleSupplierActive` all exported. `requireManager()` inline. No uniqueness pre-check (by design — supplier name not unique). `revalidatePath("/suppliers")` in all three functions. No `prisma.supplier.delete()` |
+| `actions/suppliers.ts` | Supplier Server Actions | VERIFIED | `createSupplier`, `updateSupplier`, `toggleSupplierActive` all exported. `requireManager()` inline at lines 10-16, called at lines 19, 47, 77. No uniqueness pre-check (by design — supplier name not unique). `revalidatePath("/suppliers")` in all three functions. No `prisma.supplier.delete()` |
 | `app/(protected)/categories/page.tsx` | Categories server page | VERIFIED | `"use client"` line 1. `CategoriesPage` async function. `Promise.all([prisma.category.findMany, auth()])`. `isManager={session?.user?.role === "MANAGER"}` prop |
 | `app/(protected)/categories/categories-client.tsx` | Categories client component | VERIFIED | `"use client"` line 1. All four dialog functions present. `DialogTrigger render={...}`, `DialogClose render={...}`, `AlertDialogTrigger render={...}` — zero `asChild` usage confirmed. `{isManager && ...}` guards on Create button and Actions column |
 | `app/(protected)/products/page.tsx` | Products server page | VERIFIED | `Promise.all` with 3 queries: products with `include: { category: { select: { id, name, isActive } } }`, active categories only (`where: { isActive: true }`), session. All required fields mapped to ProductsClient |
 | `app/(protected)/products/products-client.tsx` | Products client component | VERIFIED | `getSeverityBadge` imported from `@/lib/utils/severity`. Severity computed per-row. 8-column table. Inactive current category handled in EditProductDialog (disabled `SelectItem` with `(inactive)` suffix). No-category empty state message in CreateProductDialog. Zero `asChild` usage |
 | `app/(protected)/suppliers/page.tsx` | Suppliers server page | VERIFIED | Fetches ALL suppliers (no isActive filter in Prisma query). `isManager` prop. All 7 fields mapped |
 | `app/(protected)/suppliers/suppliers-client.tsx` | Suppliers client component | VERIFIED | `Textarea` from `@/components/ui/textarea`. `Tabs, TabsList, TabsTrigger` from `@/components/ui/tabs`. `FilterTab` type. Tab-aware empty states. Address field uses `Textarea` with `rows={3}` in both Create and Edit dialogs. Zero `asChild` usage |
-| `tests/catalog.test.ts` | Unit tests | VERIFIED | 12 non-todo tests across 4 describe blocks (severity logic ×5, product schema ×4, supplier schema ×2, category schema ×1). 5 `it.todo` integration stubs. No `@prisma/client` imports |
+| `tests/catalog.test.ts` | Unit tests | VERIFIED | 12 non-todo tests across 4 describe blocks (severity logic x5, product schema x4, supplier schema x2, category schema x1). 5 `it.todo` integration stubs. No `@prisma/client` imports |
 | `components/ui/textarea.tsx` | shadcn Textarea component | VERIFIED | File exists |
 | `components/ui/tabs.tsx` | shadcn Tabs component | VERIFIED | File exists |
 
@@ -87,7 +87,7 @@ human_verification:
 |------|----| ----|--------|---------|
 | `actions/categories.ts` (all 3 mutations) | `auth()` → MANAGER check | `requireManager()` function lines 10-16 | VERIFIED | Called first in all three exported functions |
 | `actions/products.ts` (all 3 mutations) | `auth()` → MANAGER check | `requireManager()` lines 10-16 | VERIFIED | Called first in all three exported functions |
-| `actions/suppliers.ts` (all 3 mutations) | `auth()` → MANAGER check | `requireManager()` lines 10-16 | VERIFIED | Called first in all three exported functions |
+| `actions/suppliers.ts` (all 3 mutations) | `auth()` → MANAGER check | `requireManager()` lines 10-16 | VERIFIED | Called at lines 19, 47, 77 in createSupplier, updateSupplier, toggleSupplierActive respectively |
 | `actions/categories.ts` | `revalidatePath("/categories")` | After every successful Prisma write | VERIFIED | Lines 39, 69, 81 — all three mutation functions |
 | `actions/products.ts` | `revalidatePath("/products")` | After every successful Prisma write | VERIFIED | Lines 57, 102, 114 — all three mutation functions |
 | `actions/suppliers.ts` | `revalidatePath("/suppliers")` | After every successful Prisma write | VERIFIED | Lines 42, 72, 84 — all three mutation functions |
@@ -131,9 +131,9 @@ human_verification:
 | PROD-02 | 02-04 | Admin can edit product details (name, category, reorder threshold) | SATISFIED | `updateProduct` in `actions/products.ts`; SKU NOT-exclusion; edit dialog in `products-client.tsx` |
 | PROD-03 | 02-04 | Admin can deactivate a product (soft-delete) | SATISFIED | `toggleProductActive` with `isActive` flag; no `prisma.product.delete()` |
 | PROD-04 | 02-02, 02-04 | User can view product list with stock level and severity tier | SATISFIED | 8-column table; `getSeverityBadge` computed per row; `currentStock` displayed |
-| SUPL-01 | 02-05 | Staff/Manager can create a supplier profile (5 fields incl. address) | PARTIALLY SATISFIED | All 5 fields implemented; address uses Textarea; but restricted to MANAGER, not Staff as stated |
-| SUPL-02 | 02-05 | Staff/Manager can edit supplier details | PARTIALLY SATISFIED | `updateSupplier` with all 5 fields; but MANAGER-only |
-| SUPL-03 | 02-05 | Staff/Manager can deactivate a supplier (soft-delete) | PARTIALLY SATISFIED | `toggleSupplierActive`; no `prisma.supplier.delete()`; but MANAGER-only |
+| SUPL-01 | 02-05 | Manager can create a supplier profile (5 fields incl. address) | SATISFIED | All 5 fields implemented; address uses Textarea; `requireManager()` at line 19 of `actions/suppliers.ts`; CONTEXT.md D-"Specifics" and ROADMAP SC4 both confirm Manager-only |
+| SUPL-02 | 02-05 | Manager can edit supplier details | SATISFIED | `updateSupplier` with all 5 fields; `requireManager()` at line 47 |
+| SUPL-03 | 02-05 | Manager can deactivate a supplier (soft-delete) | SATISFIED | `toggleSupplierActive`; no `prisma.supplier.delete()`; `requireManager()` at line 77 |
 | SUPL-04 | 02-05 | User can view supplier list with active/inactive filter | SATISFIED | `FilterTab` state; Tabs component; `visibleSuppliers` filter; tab-aware empty states |
 
 ### Anti-Patterns Found
@@ -144,32 +144,23 @@ human_verification:
 
 ### Human Verification Required
 
-#### 1. Staff-vs-Manager role restriction on supplier mutations (KEY DECISION)
+#### 1. Staff role — supplier page read-only access
 
-**Test:** Log in as a Staff user. Attempt to create a supplier by navigating to `/suppliers`.
-**Expected per ROADMAP SC4:** Staff CAN create, edit, and deactivate suppliers.
-**Actual behavior per code:** `requireManager()` throws `Error("Unauthorized — Manager role required")` for Staff — supplier mutations are MANAGER-only.
-**Why human:** This is a role authorization behavior that requires a live session test to confirm. More importantly, this is a design decision that requires explicit human acceptance. CONTEXT.md deliberately overrides REQUIREMENTS.md "Staff" wording to Manager-only, but the ROADMAP SC4 was not updated. The developer must decide to either align code to SC (allow Staff) or align SC to code (update wording). If the Manager-only behavior is intentional, add the override below to this VERIFICATION.md frontmatter to accept it and clear the gap:
+**Test:** Log in as a Staff user. Navigate to `/suppliers`.
+**Expected:** Supplier list renders with All/Active/Inactive tabs visible. No "Create supplier" button in the header. No Edit or Deactivate action buttons in table rows.
+**Why human:** `isManager` prop is derived from the live server session via `auth()`. The conditional `{isManager && ...}` guards require a real authenticated browser session to confirm correct rendering for Staff role.
 
-```yaml
-overrides:
-  - must_have: "Staff can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved"
-    reason: "CONTEXT.md deliberately overrides REQUIREMENTS.md SUPL-01/02/03 Staff wording to Manager-only, aligning supplier mutations with all other catalog mutations (categories, products). Security posture is intentionally more restrictive. PO history preservation is a Phase 4 concern."
-    accepted_by: "your-username"
-    accepted_at: "2026-06-30T00:00:00Z"
-```
+#### 2. Manager role — create supplier end-to-end
 
-#### 2. Supplier list tab filter — runtime tab switching
+**Test:** Log in as Manager user, click "Create supplier", fill all five fields (including multi-line address), submit.
+**Expected:** Supplier row appears in the All tab with all five fields recorded; address textarea accepted multi-line input.
+**Why human:** Server Action invocation, form submission flow, and Prisma write require live browser test.
+
+#### 3. Supplier list tab filter — runtime tab switching
 
 **Test:** Navigate to `/suppliers` as any authenticated user. Click "Active" tab, then "Inactive" tab.
 **Expected:** Visible rows filter instantly (no page navigation); empty-state message varies per tab ("No active suppliers" / "No inactive suppliers" / "No suppliers yet").
 **Why human:** Client-side `useState` filter and conditional empty state rendering requires live browser observation.
-
-#### 3. Dialog open/close flow — render prop compatibility
-
-**Test:** Click "Create category", "Create product", "Create supplier" — verify each dialog opens. Click "Discard" — verify dialog closes and form resets. Submit valid data — verify dialog closes.
-**Expected:** Dialogs open and close correctly; forms reset on successful submit via `form.reset(); setOpen(false)`.
-**Why human:** base-ui render prop (`render={<Button>...}`) on `DialogTrigger`/`DialogClose`/`AlertDialogTrigger` requires live browser test to confirm the specific installed version handles these props correctly.
 
 #### 4. SKU field-level error display
 
@@ -177,7 +168,13 @@ overrides:
 **Expected:** Error "SKU already exists" appears as a FormMessage specifically below the SKU field (not as a general banner above the submit button).
 **Why human:** `form.setError("sku", ...)` targets field-level rendering — requires live browser observation to confirm field attachment.
 
-#### 5. Edit product — inactive category display
+#### 5. Dialog open/close flow — render prop compatibility
+
+**Test:** Click "Create category", "Create product", "Create supplier" — verify each dialog opens. Click "Discard" — verify dialog closes and form resets. Submit valid data — verify dialog closes.
+**Expected:** Dialogs open and close correctly; forms reset on successful submit via `form.reset(); setOpen(false)`.
+**Why human:** base-ui render prop (`render={<Button>...}`) on `DialogTrigger`/`DialogClose`/`AlertDialogTrigger` requires live browser test to confirm the specific installed version handles these props correctly.
+
+#### 6. Edit product — inactive category display
 
 **Test:** Deactivate a category. Open the Edit dialog for a product assigned to that category.
 **Expected:** The deactivated category appears as a greyed-out/disabled dropdown option with "(inactive)" suffix; active categories appear as normal selectable options.
@@ -185,11 +182,13 @@ overrides:
 
 ### Gaps Summary
 
-**1 gap blocking goal achievement:** ROADMAP Success Criterion 4 says "Staff can create, edit, and soft-deactivate supplier profiles" but the implementation requires MANAGER role. This is a deliberate documented design decision (CONTEXT.md overrides REQUIREMENTS.md) but was never reflected in the ROADMAP SC wording.
+No gaps. All 5 ROADMAP success criteria are verified.
 
-The gap is minimal in functional terms — the capability is fully delivered, and the security posture is actually stronger (Manager-only is stricter than Staff). The most likely resolution is adding an override to accept the documented deviation.
+**Re-verification note:** The previous gap (SC4 wording mismatch — "Staff can" in ROADMAP vs `requireManager()` enforcement in code) is closed. ROADMAP SC4 was updated to "Manager can create, edit, and soft-deactivate supplier profiles" — consistent with `actions/suppliers.ts` lines 19, 47, and 77 which all call `await requireManager()`. CONTEXT.md "Specifics" section confirms this is the intended design: "Only Manager can create, edit, or deactivate (products, categories, suppliers)."
+
+6 human verification items remain (runtime behavior checks requiring a live browser session). These are not gaps — all code paths are wired and substantive.
 
 ---
 
-_Verified: 2026-06-30_
+_Verified: 2026-06-30 (re-verification after SC4 gap closure)_
 _Verifier: Claude (gsd-verifier)_
