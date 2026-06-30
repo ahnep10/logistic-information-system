@@ -5,10 +5,10 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: foundation
 status: executing
-stopped_at: Completed 01-03-PLAN.md (Vitest install + Wave 0 test stubs)
-last_updated: "2026-06-30T04:36:00Z"
+stopped_at: Completed 01-04-PLAN.md (user management + profile pages)
+last_updated: "2026-06-30T05:41:00Z"
 last_activity: 2026-06-30
-last_activity_desc: Completed plan 01-03 — Vitest + 12 it.todo stubs
+last_activity_desc: Completed plan 01-04 — user validation schemas, Server Actions, /users CRUD page, /profile password change
 progress:
   total_phases: 6
   completed_phases: 0
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-29)
 ## Current Position
 
 Phase: 01 (foundation) — EXECUTING
-Plan: 4 of 6
-Status: Ready to execute (01-04 next — DB init + end-to-end browser verify)
-Last activity: 2026-06-30 — Completed 01-03 (Vitest + Wave 0 test stubs)
+Plan: 5 of 6
+Status: Ready to execute (01-05 next)
+Last activity: 2026-06-30 — Completed 01-04 (user management + profile pages)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P01A | 12m | - tasks | - files |
 | Phase 01 P01B | 10m | 2 tasks | 15 files |
 | Phase 01 P03 | 18m | 2 tasks | 10 files |
+| Phase 01 P04 | 25m | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [01-03]: passWithNoTests: true required in vitest.config.ts — Vitest 4.x exits code 1 with no test files (changed from prior versions)
 - [01-03]: tests/vitest.d.ts with triple-slash reference for vitest/globals chosen over tsconfig types array to avoid overriding @types auto-discovery
 - [01-03]: --legacy-peer-deps required for @vitejs/plugin-react installation due to optional babel 8 peer conflict with shadcn babel 7
+- [01-04]: vitest.config.ts requires resolve.alias @/* -> project root for test imports to use path aliases
+- [01-04]: base-ui components use render prop (not Radix asChild) for DialogTrigger, DialogClose, AlertDialogTrigger
+- [01-04]: users page split into server page.tsx + client users-client.tsx — base-ui dialog components require client context
 
 ### Pending Todos
 
@@ -102,4 +106,4 @@ None yet.
 
 Last session: 2026-06-30T04:36:00Z
 Stopped at: Completed 01-03-PLAN.md (Vitest install + Wave 0 test stubs)
-Resume file: .planning/phases/01-foundation/01-04-PLAN.md
+Resume file: .planning/phases/01-foundation/01-05-PLAN.md
