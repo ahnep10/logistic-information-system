@@ -71,7 +71,7 @@ Plans:
   4. Staff can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved.
   5. Supplier list can be filtered by active/inactive status.
 
-**Plans**: 3/5 plans executed
+**Plans**: 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -82,7 +82,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 02-03-PLAN.md — Categories full CRUD (Server Actions + page + client component)
-- [ ] 02-04-PLAN.md — Products full CRUD with severity badge (Server Actions + page + client component)
+- [x] 02-04-PLAN.md — Products full CRUD with severity badge (Server Actions + page + client component)
 - [ ] 02-05-PLAN.md — Suppliers full CRUD with tabs filter (Server Actions + page + client component)
 
 **UI hint**: yes
@@ -160,7 +160,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 6/6 | Complete    | 2026-06-30 |
-| 2. Catalog | 3/5 | In Progress|  |
+| 2. Catalog | 4/5 | In Progress|  |
 | 3. Warehouse | 0/TBD | Not started | - |
 | 4. Procurement | 0/TBD | Not started | - |
 | 5. Dashboard | 0/TBD | Not started | - |
