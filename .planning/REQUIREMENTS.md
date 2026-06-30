@@ -20,10 +20,10 @@
 
 ### Supplier Management
 
-- [ ] **SUPL-01**: Staff can create a supplier profile (name, contact person, phone, email, address)
-- [ ] **SUPL-02**: Staff can edit supplier details
-- [ ] **SUPL-03**: Staff can deactivate a supplier (soft-delete; preserves linked PO history)
-- [ ] **SUPL-04**: User can view the supplier list with active/inactive filter
+- [x] **SUPL-01**: Staff can create a supplier profile (name, contact person, phone, email, address)
+- [x] **SUPL-02**: Staff can edit supplier details
+- [x] **SUPL-03**: Staff can deactivate a supplier (soft-delete; preserves linked PO history)
+- [x] **SUPL-04**: User can view the supplier list with active/inactive filter
 
 ### Warehouse & Inventory
 
@@ -96,10 +96,10 @@
 | PROD-02 | Phase 2 | Complete |
 | PROD-03 | Phase 2 | Complete |
 | PROD-04 | Phase 2 | Complete |
-| SUPL-01 | Phase 2 | Pending |
-| SUPL-02 | Phase 2 | Pending |
-| SUPL-03 | Phase 2 | Pending |
-| SUPL-04 | Phase 2 | Pending |
+| SUPL-01 | Phase 2 | Complete |
+| SUPL-02 | Phase 2 | Complete |
+| SUPL-03 | Phase 2 | Complete |
+| SUPL-04 | Phase 2 | Complete |
 | INVT-01 | Phase 3 | Pending |
 | INVT-02 | Phase 3 | Pending |
 | INVT-03 | Phase 3 | Pending |

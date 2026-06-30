@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 02
 current_phase_name: catalog
 status: executing
-stopped_at: Phase 2 UI-SPEC approved
-last_updated: "2026-06-30T12:07:42.302Z"
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-06-30T14:03:28.087Z"
 last_activity: 2026-06-30
 last_activity_desc: Phase 02 execution resumed (wave continue)
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 11
-  completed_plans: 10
-  percent: 17
+  completed_plans: 11
+  percent: 33
 ---
 
 # Project State
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-29)
 ## Current Position
 
 Phase: 02 (catalog) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-06-30 — Phase 02 execution resumed (wave continue)
 
@@ -61,6 +61,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 01 P04 | 25m | 3 tasks | 6 files |
 | Phase 02 P03 | 12m | 2 tasks | 3 files |
 | Phase 02 P04 | 8m | 2 tasks | 3 files |
+| Phase 02 P05 | 15m | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [01-04]: vitest.config.ts requires resolve.alias @/* -> project root for test imports to use path aliases
 - [01-04]: base-ui components use render prop (not Radix asChild) for DialogTrigger, DialogClose, AlertDialogTrigger
 - [01-04]: users page split into server page.tsx + client users-client.tsx — base-ui dialog components require client context
+- [Phase ?]: Manager-only mutations for suppliers — CONTEXT.md overrides REQUIREMENTS.md SUPL-01/02/03 Staff wording; requireManager() inline in actions/suppliers.ts
+- [Phase ?]: Client-side Tabs filter for suppliers — all suppliers fetched once server-side; FilterTab useState drives visibleSuppliers without page reload
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-30T12:07:42.294Z
-Stopped at: Phase 2 UI-SPEC approved
-Resume file: .planning/phases/02-catalog/02-UI-SPEC.md
+Last session: 2026-06-30T14:03:28.077Z
+Stopped at: Completed 02-05-PLAN.md
+Resume file: None
