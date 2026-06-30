@@ -1,14 +1,3 @@
-"use client"
-
-// This file combines a server-fetched data layer (via a parent server component)
-// with client-side dialogs. We use a single client component approach for the full
-// page since dialogs require client state.
-
-// NOTE: Because Next.js App Router requires server components to be async and client
-// components to handle interactivity, this page is split into:
-//   - ProductsPage (default export) — server component fetching data
-//   - ProductsClient — client component rendering table + dialogs
-
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import ProductsClient from "./products-client"

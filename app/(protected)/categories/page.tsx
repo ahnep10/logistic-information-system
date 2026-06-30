@@ -1,10 +1,3 @@
-"use client"
-
-// This file combines a server-fetched data layer with client-side dialogs.
-// Split into:
-//   - CategoriesPage (default export) — server component fetching data
-//   - CategoriesClient — client component rendering table + dialogs
-
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import CategoriesClient from "./categories-client"
