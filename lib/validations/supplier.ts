@@ -9,7 +9,7 @@ export const createSupplierSchema = z.object({
 })
 
 export const updateSupplierSchema = z.object({
-  id: z.string(),
+  id: z.string().min(1, "ID is required"),
   name: z.string().min(1, "Supplier name is required."),
   contactPerson: z.string().min(1, "Contact person is required."),
   phone: z.string().min(1, "Phone is required."),

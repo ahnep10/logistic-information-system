@@ -3,18 +3,24 @@
 import { z } from "zod"
 
 export const createProductSchema = z.object({
-  name: z.string().min(1, "Product name is required."),
-  sku: z.string().min(1, "SKU is required.").max(50).trim(),
+  name: z.string().trim().min(1, "Product name is required.").max(200),
+  sku: z.string().trim().min(1, "SKU is required.").max(50),
   categoryId: z.string().min(1, "Category is required."),
-  reorderThreshold: z.coerce.number().int().min(0, "Must be 0 or greater"),
+  reorderThreshold: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+    z.number().int().min(0, "Must be 0 or greater")
+  ),
 })
 
 export const updateProductSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, "Product name is required."),
-  sku: z.string().min(1, "SKU is required.").max(50).trim(),
+  id: z.string().min(1, "ID is required"),
+  name: z.string().trim().min(1, "Product name is required.").max(200),
+  sku: z.string().trim().min(1, "SKU is required.").max(50),
   categoryId: z.string().min(1, "Category is required."),
-  reorderThreshold: z.coerce.number().int().min(0, "Must be 0 or greater"),
+  reorderThreshold: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+    z.number().int().min(0, "Must be 0 or greater")
+  ),
 })
 
 export type CreateProductInput = z.infer<typeof createProductSchema>
