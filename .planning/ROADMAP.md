@@ -35,12 +35,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A Manager role can navigate to all modules; a Staff role attempting to access a manager-only page receives a 403 Forbidden response.
   4. Every protected route returns 401/403 when accessed without a valid session token — enforced at middleware, not only in UI.
 
-**Plans**: 2/6 plans executed
+**Plans**: 3/6 plans executed
 
 Plans:
 
 - [x] 01-01A-PLAN.md
-- [ ] 01-01B-PLAN.md
+- [x] 01-01B-PLAN.md
 
 **Wave 1**
 
@@ -146,7 +146,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/6 | In Progress|  |
+| 1. Foundation | 3/6 | In Progress|  |
 | 2. Catalog | 0/TBD | Not started | - |
 | 3. Warehouse | 0/TBD | Not started | - |
 | 4. Procurement | 0/TBD | Not started | - |
