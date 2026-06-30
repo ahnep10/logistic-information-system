@@ -71,13 +71,13 @@ Plans:
   4. Staff can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved.
   5. Supplier list can be filtered by active/inactive status.
 
-**Plans**: 5 plans
+**Plans**: 2/5 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Prisma schema extension (Category, Product, Supplier) + DB push [BLOCKING]
-- [ ] 02-02-PLAN.md — Severity helper, Zod schemas (category/product/supplier), shadcn textarea+tabs, test scaffold
+- [x] 02-01-PLAN.md — Prisma schema extension (Category, Product, Supplier) + DB push [BLOCKING]
+- [x] 02-02-PLAN.md — Severity helper, Zod schemas (category/product/supplier), shadcn textarea+tabs, test scaffold
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -160,7 +160,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 6/6 | Complete    | 2026-06-30 |
-| 2. Catalog | 0/TBD | Not started | - |
+| 2. Catalog | 2/5 | In Progress|  |
 | 3. Warehouse | 0/TBD | Not started | - |
 | 4. Procurement | 0/TBD | Not started | - |
 | 5. Dashboard | 0/TBD | Not started | - |
