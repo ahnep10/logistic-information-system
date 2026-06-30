@@ -13,8 +13,8 @@
 
 ### Product Catalog
 
-- [ ] **PROD-01**: Admin can create a product with name, SKU, category, and reorder threshold
-- [ ] **PROD-02**: Admin can edit product details (name, category, reorder threshold)
+- [x] **PROD-01**: Admin can create a product with name, SKU, category, and reorder threshold
+- [x] **PROD-02**: Admin can edit product details (name, category, reorder threshold)
 - [ ] **PROD-03**: Admin can deactivate a product (soft-delete; does not remove history)
 - [ ] **PROD-04**: User can view the product list showing current stock level and stock severity tier (Critical / Warning / OK) based on threshold proximity
 
@@ -92,8 +92,8 @@
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
-| PROD-01 | Phase 2 | Pending |
-| PROD-02 | Phase 2 | Pending |
+| PROD-01 | Phase 2 | Complete |
+| PROD-02 | Phase 2 | Complete |
 | PROD-03 | Phase 2 | Pending |
 | PROD-04 | Phase 2 | Pending |
 | SUPL-01 | Phase 2 | Pending |
