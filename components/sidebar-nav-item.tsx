@@ -1,16 +1,16 @@
 "use client"
+import type { ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import type { LucideIcon } from "lucide-react"
 
 interface SidebarNavItemProps {
   label: string
   href: string
-  icon: LucideIcon
+  icon: ReactNode
 }
 
-export default function SidebarNavItem({ label, href, icon: Icon }: SidebarNavItemProps) {
+export default function SidebarNavItem({ label, href, icon }: SidebarNavItemProps) {
   const pathname = usePathname()
   const isActive = pathname === href || pathname.startsWith(href + "/")
 
@@ -25,12 +25,7 @@ export default function SidebarNavItem({ label, href, icon: Icon }: SidebarNavIt
           : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
       )}
     >
-      <Icon
-        className={cn(
-          "w-4 h-4 shrink-0",
-          isActive ? "text-slate-100" : "text-slate-400"
-        )}
-      />
+      {icon}
       <span>{label}</span>
     </Link>
   )

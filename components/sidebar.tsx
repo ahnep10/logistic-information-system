@@ -24,15 +24,15 @@ import {
 import { logout } from "@/actions/auth"
 
 const ALL_NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, managerOnly: true },
-  { label: "Products", href: "/products", icon: Package, managerOnly: false },
-  { label: "Categories", href: "/categories", icon: Tag, managerOnly: false },
-  { label: "Suppliers", href: "/suppliers", icon: Truck, managerOnly: false },
-  { label: "Stock In/Out", href: "/stock", icon: ArrowLeftRight, managerOnly: false },
-  { label: "Inventory History", href: "/inventory", icon: History, managerOnly: false },
-  { label: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart, managerOnly: false },
-  { label: "Reports", href: "/reports", icon: BarChart2, managerOnly: true },
-  { label: "Users", href: "/users", icon: Users, managerOnly: true },
+  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4 shrink-0" />, managerOnly: true },
+  { label: "Products", href: "/products", icon: <Package className="w-4 h-4 shrink-0" />, managerOnly: false },
+  { label: "Categories", href: "/categories", icon: <Tag className="w-4 h-4 shrink-0" />, managerOnly: false },
+  { label: "Suppliers", href: "/suppliers", icon: <Truck className="w-4 h-4 shrink-0" />, managerOnly: false },
+  { label: "Stock In/Out", href: "/stock", icon: <ArrowLeftRight className="w-4 h-4 shrink-0" />, managerOnly: false },
+  { label: "Inventory History", href: "/inventory", icon: <History className="w-4 h-4 shrink-0" />, managerOnly: false },
+  { label: "Purchase Orders", href: "/purchase-orders", icon: <ShoppingCart className="w-4 h-4 shrink-0" />, managerOnly: false },
+  { label: "Reports", href: "/reports", icon: <BarChart2 className="w-4 h-4 shrink-0" />, managerOnly: true },
+  { label: "Users", href: "/users", icon: <Users className="w-4 h-4 shrink-0" />, managerOnly: true },
 ]
 
 interface SidebarProps {
