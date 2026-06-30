@@ -7,9 +7,9 @@
 
 ### Authentication & Access
 
-- [ ] **AUTH-01**: User can log in with email and password
-- [ ] **AUTH-02**: User session persists across browser refresh without re-login
-- [ ] **AUTH-03**: Manager role can access dashboard, reports, and all modules; staff role can perform operational transactions; system enforces roles server-side on every protected route
+- [x] **AUTH-01**: User can log in with email and password
+- [x] **AUTH-02**: User session persists across browser refresh without re-login
+- [x] **AUTH-03**: Manager role can access dashboard, reports, and all modules; staff role can perform operational transactions; system enforces roles server-side on every protected route
 
 ### Product Catalog
 
@@ -89,9 +89,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
 | PROD-01 | Phase 2 | Pending |
 | PROD-02 | Phase 2 | Pending |
 | PROD-03 | Phase 2 | Pending |
@@ -120,6 +120,7 @@
 | REPT-04 | Phase 6 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 29 total
 - Mapped to phases: 29
 - Unmapped: 0 ✓

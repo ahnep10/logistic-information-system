@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 1
-current_phase_name: Foundation
+current_phase: 01
+current_phase_name: foundation
 status: executing
-stopped_at: context exhaustion at 75% (2026-06-29)
-last_updated: "2026-06-29T18:06:44.719Z"
-last_activity: 2026-06-29
-last_activity_desc: Roadmap created; 29 requirements mapped across 6 phases.
+stopped_at: Completed 01-01A-PLAN.md (scaffold + auth core)
+last_updated: "2026-06-30T03:41:05.183Z"
+last_activity: 2026-06-30
+last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 0
+  completed_plans: 2
   percent: 0
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-29)
 
 **Core value:** Give managers a single real-time source of truth for inventory and procurement so they can make faster, data-driven decisions, reduce stock shortages, and improve operational efficiency.
-**Current focus:** Phase 1 — Foundation (Auth, RBAC, project scaffold)
+**Current focus:** Phase 01 — foundation
 
 ## Current Position
 
-Phase: 1 of 6 (Foundation)
-Plan: 0 of TBD in current phase
+Phase: 01 (foundation) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-06-29 — Roadmap created; 29 requirements mapped across 6 phases.
+Last activity: 2026-06-30 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01 P01A | 12m | - tasks | - files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - Architecture: three-layer monolith — presentation / application (Server Actions) / data (Prisma)
 - Inventory is the single writer of stock quantities; PO goods-receipt must call the inventory service atomically
 - All stock mutations must use DB transactions with SELECT FOR UPDATE + CHECK constraint (qty >= 0)
+- [Phase ?]: Auth.js v5 two-file split (auth.config.ts Edge-safe + lib/auth.ts Node.js only) required for Next.js 15 middleware
+- [Phase ?]: shadcn/ui v4 (base-nova style, @base-ui/react) used — v3 new-york style deprecated; form.tsx created manually as @radix-ui not available
+- [Phase ?]: zod@4.x and @hookform/resolvers@5.x accepted (npm latest); Zod 4 API backward compatible for all loginSchema/createUserSchema usage patterns
 
 ### Pending Todos
 
@@ -91,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-29T17:35:26.277Z
-Stopped at: context exhaustion at 75% (2026-06-29)
+Last session: 2026-06-30T03:41:05.174Z
+Stopped at: Completed 01-01A-PLAN.md (scaffold + auth core)
 Resume file: .planning/phases/01-foundation/01-UI-SPEC.md
