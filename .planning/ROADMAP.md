@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A Manager role can navigate to all modules; a Staff role attempting to access a manager-only page receives a 403 Forbidden response.
   4. Every protected route returns 401/403 when accessed without a valid session token — enforced at middleware, not only in UI.
 
-**Plans**: 3/6 plans executed
+**Plans**: 4/6 plans executed
 
 Plans:
 
@@ -49,7 +49,7 @@ Plans:
 **Wave 3** *(blocked on Wave 1 completion)*
 
 - [ ] 01-02-PLAN.md — DB initialization: configure .env, prisma db push, db:seed, end-to-end browser login verify [BLOCKING human]
-- [ ] 01-03-PLAN.md — Test scaffolding: Vitest install, vitest.config.ts, 12 test stubs across 5 files (Wave 0 coverage)
+- [x] 01-03-PLAN.md — Test scaffolding: Vitest install, vitest.config.ts, 12 test stubs across 5 files (Wave 0 coverage)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -146,7 +146,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 3/6 | In Progress|  |
+| 1. Foundation | 4/6 | In Progress|  |
 | 2. Catalog | 0/TBD | Not started | - |
 | 3. Warehouse | 0/TBD | Not started | - |
 | 4. Procurement | 0/TBD | Not started | - |
