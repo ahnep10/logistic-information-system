@@ -20,6 +20,12 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login", nextUrl))
   }
 
+  // Case 1.5: Authenticated user at root → redirect to role home
+  if (pathname === "/") {
+    const home = session.user?.role === "MANAGER" ? "/dashboard" : "/inventory"
+    return NextResponse.redirect(new URL(home, nextUrl))
+  }
+
   // Case 2: Has session and on /login → redirect to role home (D-12)
   if (pathname === "/login") {
     const home = session.user?.role === "MANAGER" ? "/dashboard" : "/inventory"
