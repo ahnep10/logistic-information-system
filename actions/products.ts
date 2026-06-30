@@ -1,5 +1,6 @@
 "use server"
 import { auth } from "@/lib/auth"
+import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import {
@@ -7,16 +8,17 @@ import {
   updateProductSchema,
 } from "@/lib/validations/product"
 
-async function requireManager() {
+async function requireManager(): Promise<{ error: string } | null> {
   const session = await auth()
   if (session?.user?.role !== "MANAGER") {
-    throw new Error("Unauthorized — Manager role required")
+    return { error: "Unauthorized" }
   }
-  return session
+  return null
 }
 
 export async function createProduct(formData: FormData) {
-  await requireManager()
+  const authError = await requireManager()
+  if (authError) return authError
 
   const parsed = createProductSchema.safeParse({
     name: formData.get("name"),
@@ -44,22 +46,33 @@ export async function createProduct(formData: FormData) {
     return { error: "Selected category is not available." }
   }
 
-  await prisma.product.create({
-    data: {
-      name: parsed.data.name,
-      sku: parsed.data.sku,
-      categoryId: parsed.data.categoryId,
-      reorderThreshold: parsed.data.reorderThreshold,
-      // currentStock intentionally excluded — @default(0) handles it (D-04)
-    },
-  })
+  try {
+    await prisma.product.create({
+      data: {
+        name: parsed.data.name,
+        sku: parsed.data.sku,
+        categoryId: parsed.data.categoryId,
+        reorderThreshold: parsed.data.reorderThreshold,
+        // currentStock intentionally excluded — @default(0) handles it (D-04)
+      },
+    })
+  } catch (err: unknown) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      return { error: "SKU already exists." }
+    }
+    return { error: "Failed to create product. Please try again." }
+  }
 
   revalidatePath("/products")
   return { success: true }
 }
 
 export async function updateProduct(formData: FormData) {
-  await requireManager()
+  const authError = await requireManager()
+  if (authError) return authError
 
   const parsed = updateProductSchema.safeParse({
     id: formData.get("id"),
@@ -88,28 +101,43 @@ export async function updateProduct(formData: FormData) {
     return { error: "Selected category is not available." }
   }
 
-  await prisma.product.update({
-    where: { id: parsed.data.id },
-    data: {
-      name: parsed.data.name,
-      sku: parsed.data.sku,
-      categoryId: parsed.data.categoryId,
-      reorderThreshold: parsed.data.reorderThreshold,
-      // currentStock intentionally excluded — managed exclusively by Phase 3 (D-04)
-    },
-  })
+  try {
+    await prisma.product.update({
+      where: { id: parsed.data.id },
+      data: {
+        name: parsed.data.name,
+        sku: parsed.data.sku,
+        categoryId: parsed.data.categoryId,
+        reorderThreshold: parsed.data.reorderThreshold,
+        // currentStock intentionally excluded — managed exclusively by Phase 3 (D-04)
+      },
+    })
+  } catch (err: unknown) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      return { error: "Product not found." }
+    }
+    return { error: "Failed to update product. Please try again." }
+  }
 
   revalidatePath("/products")
   return { success: true }
 }
 
 export async function toggleProductActive(id: string, isActive: boolean) {
-  await requireManager()
+  const authError = await requireManager()
+  if (authError) return authError
 
-  await prisma.product.update({
-    where: { id },
-    data: { isActive },
-  })
+  try {
+    await prisma.product.update({
+      where: { id },
+      data: { isActive },
+    })
+  } catch {
+    return { error: "Failed to update product." }
+  }
 
   revalidatePath("/products")
   return { success: true }

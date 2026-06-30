@@ -1,5 +1,6 @@
 "use server"
 import { auth } from "@/lib/auth"
+import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import {
@@ -7,16 +8,17 @@ import {
   updateCategorySchema,
 } from "@/lib/validations/category"
 
-async function requireManager() {
+async function requireManager(): Promise<{ error: string } | null> {
   const session = await auth()
   if (session?.user?.role !== "MANAGER") {
-    throw new Error("Unauthorized — Manager role required")
+    return { error: "Unauthorized" }
   }
-  return session
+  return null
 }
 
 export async function createCategory(formData: FormData) {
-  await requireManager()
+  const authError = await requireManager()
+  if (authError) return authError
 
   const parsed = createCategorySchema.safeParse({
     name: formData.get("name"),
@@ -32,16 +34,27 @@ export async function createCategory(formData: FormData) {
     return { error: "Category name already exists." }
   }
 
-  await prisma.category.create({
-    data: { name: parsed.data.name },
-  })
+  try {
+    await prisma.category.create({
+      data: { name: parsed.data.name },
+    })
+  } catch (err: unknown) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      return { error: "Category name already exists." }
+    }
+    return { error: "Failed to create category. Please try again." }
+  }
 
   revalidatePath("/categories")
   return { success: true }
 }
 
 export async function updateCategory(formData: FormData) {
-  await requireManager()
+  const authError = await requireManager()
+  if (authError) return authError
 
   const parsed = updateCategorySchema.safeParse({
     id: formData.get("id"),
@@ -61,22 +74,37 @@ export async function updateCategory(formData: FormData) {
     return { error: "Category name already exists." }
   }
 
-  await prisma.category.update({
-    where: { id: parsed.data.id },
-    data: { name: parsed.data.name },
-  })
+  try {
+    await prisma.category.update({
+      where: { id: parsed.data.id },
+      data: { name: parsed.data.name },
+    })
+  } catch (err: unknown) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      return { error: "Category not found." }
+    }
+    return { error: "Failed to update category. Please try again." }
+  }
 
   revalidatePath("/categories")
   return { success: true }
 }
 
 export async function toggleCategoryActive(id: string, isActive: boolean) {
-  await requireManager()
+  const authError = await requireManager()
+  if (authError) return authError
 
-  await prisma.category.update({
-    where: { id },
-    data: { isActive },
-  })
+  try {
+    await prisma.category.update({
+      where: { id },
+      data: { isActive },
+    })
+  } catch {
+    return { error: "Failed to update category." }
+  }
 
   revalidatePath("/categories")
   return { success: true }
