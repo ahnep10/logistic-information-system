@@ -290,6 +290,24 @@ function EditCategoryDialog({ category }: { category: Category }) {
 // ── Deactivate Category AlertDialog ────────────────────────────────────────
 
 function DeactivateCategoryDialog({ category }: { category: Category }) {
+  const [pending, setPending] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
+
+  async function handleDeactivate() {
+    setPending(true)
+    setToggleError(null)
+    try {
+      const result = await toggleCategoryActive(category.id, false)
+      if (result?.error) {
+        setToggleError(result.error)
+      }
+    } catch {
+      setToggleError("Failed to deactivate category. Please try again.")
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger
@@ -312,13 +330,13 @@ function DeactivateCategoryDialog({ category }: { category: Category }) {
             can reactivate it at any time.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {toggleError && (
+          <p className="text-sm text-destructive px-1">{toggleError}</p>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>Keep active</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={async () => {
-              await toggleCategoryActive(category.id, false)
-            }}
-          >
+          <AlertDialogAction onClick={handleDeactivate} disabled={pending}>
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Deactivate category
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -330,6 +348,24 @@ function DeactivateCategoryDialog({ category }: { category: Category }) {
 // ── Reactivate Category AlertDialog ────────────────────────────────────────
 
 function ReactivateCategoryDialog({ category }: { category: Category }) {
+  const [pending, setPending] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
+
+  async function handleReactivate() {
+    setPending(true)
+    setToggleError(null)
+    try {
+      const result = await toggleCategoryActive(category.id, true)
+      if (result?.error) {
+        setToggleError(result.error)
+      }
+    } catch {
+      setToggleError("Failed to reactivate category. Please try again.")
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger
@@ -350,13 +386,13 @@ function ReactivateCategoryDialog({ category }: { category: Category }) {
             This category will appear again in the product category dropdown.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {toggleError && (
+          <p className="text-sm text-destructive px-1">{toggleError}</p>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={async () => {
-              await toggleCategoryActive(category.id, true)
-            }}
-          >
+          <AlertDialogAction onClick={handleReactivate} disabled={pending}>
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Reactivate category
           </AlertDialogAction>
         </AlertDialogFooter>

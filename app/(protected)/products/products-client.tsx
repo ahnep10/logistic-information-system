@@ -116,13 +116,13 @@ export default function ProductsClient({
               </TableHead>
               <TableHead style={{ width: 100 }}>Severity</TableHead>
               <TableHead style={{ width: 100 }}>Status</TableHead>
-              <TableHead style={{ width: 80 }}>Actions</TableHead>
+              {isManager && <TableHead style={{ width: 80 }}>Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={isManager ? 8 : 7}>
                   <div className="flex flex-col items-center py-12 text-center">
                     <Package className="w-8 h-8 text-zinc-300 mb-3" />
                     <p className="text-sm font-medium text-zinc-900">
@@ -202,8 +202,7 @@ function CreateProductDialog({ categories }: { categories: Category[] }) {
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<CreateProductInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(createProductSchema) as any,
+    resolver: zodResolver(createProductSchema),
     defaultValues: { name: "", sku: "", categoryId: "", reorderThreshold: 0 },
   })
 
@@ -366,8 +365,7 @@ function EditProductDialog({
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<UpdateProductInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(updateProductSchema) as any,
+    resolver: zodResolver(updateProductSchema),
     defaultValues: {
       id: product.id,
       name: product.name,
@@ -527,6 +525,24 @@ function EditProductDialog({
 // ── Deactivate Product AlertDialog ──────────────────────────────────────────
 
 function DeactivateProductDialog({ product }: { product: Product }) {
+  const [pending, setPending] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
+
+  async function handleDeactivate() {
+    setPending(true)
+    setToggleError(null)
+    try {
+      const result = await toggleProductActive(product.id, false)
+      if (result?.error) {
+        setToggleError(result.error)
+      }
+    } catch {
+      setToggleError("Failed to deactivate product. Please try again.")
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger
@@ -549,13 +565,13 @@ function DeactivateProductDialog({ product }: { product: Product }) {
             preserved. You can reactivate it at any time.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {toggleError && (
+          <p className="text-sm text-destructive px-1">{toggleError}</p>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>Keep active</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={async () => {
-              await toggleProductActive(product.id, false)
-            }}
-          >
+          <AlertDialogAction onClick={handleDeactivate} disabled={pending}>
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Deactivate product
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -567,6 +583,24 @@ function DeactivateProductDialog({ product }: { product: Product }) {
 // ── Reactivate Product AlertDialog ──────────────────────────────────────────
 
 function ReactivateProductDialog({ product }: { product: Product }) {
+  const [pending, setPending] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
+
+  async function handleReactivate() {
+    setPending(true)
+    setToggleError(null)
+    try {
+      const result = await toggleProductActive(product.id, true)
+      if (result?.error) {
+        setToggleError(result.error)
+      }
+    } catch {
+      setToggleError("Failed to reactivate product. Please try again.")
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger
@@ -587,13 +621,13 @@ function ReactivateProductDialog({ product }: { product: Product }) {
             This product will appear again in stock transaction dropdowns.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {toggleError && (
+          <p className="text-sm text-destructive px-1">{toggleError}</p>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={async () => {
-              await toggleProductActive(product.id, true)
-            }}
-          >
+          <AlertDialogAction onClick={handleReactivate} disabled={pending}>
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Reactivate product
           </AlertDialogAction>
         </AlertDialogFooter>

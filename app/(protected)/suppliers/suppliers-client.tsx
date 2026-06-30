@@ -454,6 +454,24 @@ function EditSupplierDialog({ supplier }: { supplier: Supplier }) {
 // ── Deactivate Supplier AlertDialog ─────────────────────────────────────────
 
 function DeactivateSupplierDialog({ supplier }: { supplier: Supplier }) {
+  const [pending, setPending] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
+
+  async function handleDeactivate() {
+    setPending(true)
+    setToggleError(null)
+    try {
+      const result = await toggleSupplierActive(supplier.id, false)
+      if (result?.error) {
+        setToggleError(result.error)
+      }
+    } catch {
+      setToggleError("Failed to deactivate supplier. Please try again.")
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger
@@ -471,13 +489,13 @@ function DeactivateSupplierDialog({ supplier }: { supplier: Supplier }) {
             purchase order history is preserved. You can reactivate them at any time.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {toggleError && (
+          <p className="text-sm text-destructive px-1">{toggleError}</p>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>Keep active</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={async () => {
-              await toggleSupplierActive(supplier.id, false)
-            }}
-          >
+          <AlertDialogAction onClick={handleDeactivate} disabled={pending}>
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Deactivate supplier
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -489,6 +507,24 @@ function DeactivateSupplierDialog({ supplier }: { supplier: Supplier }) {
 // ── Reactivate Supplier AlertDialog ─────────────────────────────────────────
 
 function ReactivateSupplierDialog({ supplier }: { supplier: Supplier }) {
+  const [pending, setPending] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
+
+  async function handleReactivate() {
+    setPending(true)
+    setToggleError(null)
+    try {
+      const result = await toggleSupplierActive(supplier.id, true)
+      if (result?.error) {
+        setToggleError(result.error)
+      }
+    } catch {
+      setToggleError("Failed to reactivate supplier. Please try again.")
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger
@@ -505,13 +541,13 @@ function ReactivateSupplierDialog({ supplier }: { supplier: Supplier }) {
             This supplier will appear again in purchase order forms.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {toggleError && (
+          <p className="text-sm text-destructive px-1">{toggleError}</p>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={async () => {
-              await toggleSupplierActive(supplier.id, true)
-            }}
-          >
+          <AlertDialogAction onClick={handleReactivate} disabled={pending}>
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Reactivate supplier
           </AlertDialogAction>
         </AlertDialogFooter>
