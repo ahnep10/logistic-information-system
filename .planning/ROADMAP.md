@@ -68,7 +68,7 @@ Plans:
   1. Admin can create a product with name, SKU, category, and reorder threshold; duplicate SKUs are rejected with a clear error.
   2. Admin can edit product details and soft-deactivate a product; deactivated products retain all historical data.
   3. Product list shows the current stock level and a severity tier (Critical / Warning / OK) for every product.
-  4. Staff can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved.
+  4. Manager can create, edit, and soft-deactivate supplier profiles; PO history linked to deactivated suppliers is preserved.
   5. Supplier list can be filtered by active/inactive status.
 
 **Plans**: 5/5 plans complete
