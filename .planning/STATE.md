@@ -93,8 +93,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- Verify exact Prisma 6 interactive transaction syntax before Phase 3 coding begins
-- Verify Prisma 6 SELECT FOR UPDATE pattern before Phase 3 coding begins
+- [RESOLVED] Prisma 6 interactive transaction: uses `prisma.$transaction(async (tx) => {...})`. SELECT FOR UPDATE via `tx.$queryRaw<Array<{currentStock:number}>>\`SELECT "currentStock" FROM products WHERE id = ${id} FOR UPDATE\``. Applied in actions/stock-transactions.ts.
 - Verify xlsx (SheetJS) current stable version on npm before Phase 6 installation
 
 ## Deferred Items
