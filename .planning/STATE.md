@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 3
-current_phase_name: Warehouse
+current_phase: 03
+current_phase_name: warehouse
 status: executing
-stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-07-01T01:20:16.459Z"
+stopped_at: Phase 03 Plan 01 complete
+last_updated: "2026-07-01T22:03:00.000Z"
 last_activity: 2026-07-01
-last_activity_desc: Phase 02 complete, transitioned to Phase 3
+last_activity_desc: Phase 03 Plan 01 executed — schema + migration + tests
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 11
-  completed_plans: 11
-  percent: 33
+  total_plans: 14
+  completed_plans: 12
+  percent: 36
 ---
 
 # Project State
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 
 ## Current Position
 
-Phase: 3 — Warehouse
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-07-01 — Phase 02 complete, transitioned to Phase 3
+Phase: 03 (warehouse) — EXECUTING
+Plan: 2 of 3
+Status: Executing Phase 03 — Plan 01 complete, Plans 02–03 pending
+Last activity: 2026-07-01 — 03-01 schema + migration + tests complete
 
-Progress: [█░░░░░░░░░] 17%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [█░░░░░░░░░] 17%
 | Phase 02 P03 | 12m | 2 tasks | 3 files |
 | Phase 02 P04 | 8m | 2 tasks | 3 files |
 | Phase 02 P05 | 15m | 2 tasks | 3 files |
+| Phase 03 P01 | 10m | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [01-04]: users page split into server page.tsx + client users-client.tsx — base-ui dialog components require client context
 - [02]: Manager-only mutations for all catalog entities (categories, products, suppliers) — requireManager() inline in all three action files
 - [02]: Client-side Tabs filter for suppliers — all suppliers fetched once server-side; FilterTab useState drives visibleSuppliers without page reload
+- [03-01]: Baseline migration required when transitioning from prisma db push to prisma migrate — use migrate resolve --applied to mark existing tables without re-running SQL
+- [03-01]: reason stored as display label string ("Purchase Received" etc.) — Zod enum validates, no kebab transformation needed
+- [03-01]: SELECT FOR UPDATE via tx.$queryRaw used in existing stock-transactions.ts (confirmed exceeds D-05 spec)
 
 ### Pending Todos
 
@@ -108,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-01T01:20:16.445Z
-Stopped at: Phase 3 UI-SPEC approved
-Resume file: .planning/phases/03-warehouse/03-UI-SPEC.md
+Last session: 2026-07-01T22:03:00.000Z
+Stopped at: Phase 03 Plan 01 complete
+Resume file: .planning/phases/03-warehouse/03-02-PLAN.md

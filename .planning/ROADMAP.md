@@ -106,7 +106,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Schema migration (TransactionType enum + StockTransaction model + CHECK constraint) + action/validation audit + test scaffold [BLOCKING]
+- [x] 03-01-PLAN.md — Schema migration (TransactionType enum + StockTransaction model + CHECK constraint) + action/validation audit + test scaffold [BLOCKING]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 6/6 | Complete    | 2026-06-30 |
 | 2. Catalog | 5/5 | Complete    | 2026-06-30 |
-| 3. Warehouse | 0/TBD | Not started | - |
+| 3. Warehouse | 1/3 | In progress | - |
 | 4. Procurement | 0/TBD | Not started | - |
 | 5. Dashboard | 0/TBD | Not started | - |
 | 6. Reports | 0/TBD | Not started | - |
