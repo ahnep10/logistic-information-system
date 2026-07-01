@@ -101,7 +101,18 @@ Plans:
   4. User can view the full stock movement history for any product, filterable by date range.
   5. Every product in the inventory list displays a color-coded severity tier (Critical / Warning / OK) based on proximity to the reorder threshold.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — Schema migration (TransactionType enum + StockTransaction model + CHECK constraint) + action/validation audit + test scaffold [BLOCKING]
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 03-02-PLAN.md — /stock page slice: RecordStockInDialog + RecordStockOutDialog + RecentTransactions table (INVT-01/02/04/06)
+- [ ] 03-03-PLAN.md — /inventory page slice: URL-param filtered history table with product/date/type controls (INVT-05)
+
 **UI hint**: yes
 
 ### Phase 4: Procurement
