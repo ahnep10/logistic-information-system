@@ -31,7 +31,7 @@
 - [x] **INVT-02**: Staff can record a stock-out transaction with product, quantity, and reason category (sale, adjustment, write-off)
 - [ ] **INVT-03**: System maintains current stock level per product, updated atomically on each transaction (no negative stock permitted at DB level)
 - [x] **INVT-04**: System automatically flags any product whose stock level is at or below its reorder threshold
-- [ ] **INVT-05**: User can view full stock movement history per product, filterable by date range
+- [x] **INVT-05**: User can view full stock movement history per product, filterable by date range
 - [x] **INVT-06**: Stock levels display a severity tier indicator (Critical / Warning / OK) to reduce cognitive load when scanning inventory
 
 ### Procurement & Purchase Orders
@@ -104,7 +104,7 @@
 | INVT-02 | Phase 3 | Complete |
 | INVT-03 | Phase 3 | Pending |
 | INVT-04 | Phase 3 | Complete |
-| INVT-05 | Phase 3 | Pending |
+| INVT-05 | Phase 3 | Complete |
 | INVT-06 | Phase 3 | Complete |
 | PROC-01 | Phase 4 | Pending |
 | PROC-02 | Phase 4 | Pending |

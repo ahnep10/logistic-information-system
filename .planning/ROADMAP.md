@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Auth, RBAC, and project scaffold — every subsequent route depends on this (completed 2026-06-30)
 - [x] **Phase 2: Catalog** - Product and supplier master data — foundational reference tables for all transactions (completed 2026-06-30)
-- [ ] **Phase 3: Warehouse** - Stock transaction recording, inventory tracking, and low-stock alerts
+- [x] **Phase 3: Warehouse** - Stock transaction recording, inventory tracking, and low-stock alerts (completed 2026-07-02)
 - [ ] **Phase 4: Procurement** - Purchase order lifecycle from Draft through atomic goods receipt
 - [ ] **Phase 5: Dashboard** - Real-time KPI summary and operational health view for managers
 - [ ] **Phase 6: Reports** - Inventory, movement, and PO reports with Excel export
@@ -101,7 +101,7 @@ Plans:
   4. User can view the full stock movement history for any product, filterable by date range.
   5. Every product in the inventory list displays a color-coded severity tier (Critical / Warning / OK) based on proximity to the reorder threshold.
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -111,7 +111,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 03-02-PLAN.md — /stock page slice: RecordStockInDialog + RecordStockOutDialog + RecentTransactions table (INVT-01/02/04/06)
-- [ ] 03-03-PLAN.md — /inventory page slice: URL-param filtered history table with product/date/type controls (INVT-05)
+- [x] 03-03-PLAN.md — /inventory page slice: URL-param filtered history table with product/date/type controls (INVT-05)
 
 **UI hint**: yes
 
@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 6/6 | Complete    | 2026-06-30 |
 | 2. Catalog | 5/5 | Complete    | 2026-06-30 |
-| 3. Warehouse | 2/3 | In Progress|  |
+| 3. Warehouse | 3/3 | Complete   | 2026-07-02 |
 | 4. Procurement | 0/TBD | Not started | - |
 | 5. Dashboard | 0/TBD | Not started | - |
 | 6. Reports | 0/TBD | Not started | - |
