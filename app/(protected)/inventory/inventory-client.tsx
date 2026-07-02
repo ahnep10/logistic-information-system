@@ -105,10 +105,6 @@ export default function InventoryClient({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Inventory History</h1>
-      </div>
-
       <div className="flex flex-wrap items-end gap-3 mb-6">
         <div>
           <label className="text-xs font-semibold mb-1 block">Product</label>
