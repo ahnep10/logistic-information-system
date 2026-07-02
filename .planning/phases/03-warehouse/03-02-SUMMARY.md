@@ -150,3 +150,12 @@ None - no external service configuration required.
 ---
 *Phase: 03-warehouse*
 *Completed: 2026-07-02*
+
+## Self-Check: PASSED
+
+- [x] `app/(protected)/stock/stock-client.tsx` exists
+- [x] `app/(protected)/stock/page.tsx` exists
+- [x] `.planning/phases/03-warehouse/03-02-SUMMARY.md` exists
+- [x] Commit `7ea9d58` (Task 1) exists in git log
+- [x] Commit `3148e23` (Task 2) exists in git log
+- [x] Commit `e21e7a5` (docs: summary) exists in git log

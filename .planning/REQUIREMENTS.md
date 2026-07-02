@@ -27,12 +27,12 @@
 
 ### Warehouse & Inventory
 
-- [ ] **INVT-01**: Staff can record a stock-in transaction with product, quantity, and reason category (purchase, return, adjustment)
-- [ ] **INVT-02**: Staff can record a stock-out transaction with product, quantity, and reason category (sale, adjustment, write-off)
+- [x] **INVT-01**: Staff can record a stock-in transaction with product, quantity, and reason category (purchase, return, adjustment)
+- [x] **INVT-02**: Staff can record a stock-out transaction with product, quantity, and reason category (sale, adjustment, write-off)
 - [ ] **INVT-03**: System maintains current stock level per product, updated atomically on each transaction (no negative stock permitted at DB level)
-- [ ] **INVT-04**: System automatically flags any product whose stock level is at or below its reorder threshold
+- [x] **INVT-04**: System automatically flags any product whose stock level is at or below its reorder threshold
 - [ ] **INVT-05**: User can view full stock movement history per product, filterable by date range
-- [ ] **INVT-06**: Stock levels display a severity tier indicator (Critical / Warning / OK) to reduce cognitive load when scanning inventory
+- [x] **INVT-06**: Stock levels display a severity tier indicator (Critical / Warning / OK) to reduce cognitive load when scanning inventory
 
 ### Procurement & Purchase Orders
 
@@ -100,12 +100,12 @@
 | SUPL-02 | Phase 2 | Complete |
 | SUPL-03 | Phase 2 | Complete |
 | SUPL-04 | Phase 2 | Complete |
-| INVT-01 | Phase 3 | Pending |
-| INVT-02 | Phase 3 | Pending |
+| INVT-01 | Phase 3 | Complete |
+| INVT-02 | Phase 3 | Complete |
 | INVT-03 | Phase 3 | Pending |
-| INVT-04 | Phase 3 | Pending |
+| INVT-04 | Phase 3 | Complete |
 | INVT-05 | Phase 3 | Pending |
-| INVT-06 | Phase 3 | Pending |
+| INVT-06 | Phase 3 | Complete |
 | PROC-01 | Phase 4 | Pending |
 | PROC-02 | Phase 4 | Pending |
 | PROC-03 | Phase 4 | Pending |

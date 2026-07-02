@@ -6,15 +6,15 @@ current_phase: 03
 current_phase_name: warehouse
 status: executing
 stopped_at: Phase 03 Plan 01 complete
-last_updated: "2026-07-01T22:03:00.000Z"
-last_activity: 2026-07-01
-last_activity_desc: Phase 03 Plan 01 executed — schema + migration + tests
+last_updated: "2026-07-02T00:30:06.659Z"
+last_activity: 2026-07-02
+last_activity_desc: Phase 03 execution resumed (wave continue)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 14
-  completed_plans: 12
-  percent: 36
+  completed_plans: 13
+  percent: 33
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 ## Current Position
 
 Phase: 03 (warehouse) — EXECUTING
-Plan: 2 of 3
-Status: Executing Phase 03 — Plan 01 complete, Plans 02–03 pending
-Last activity: 2026-07-01 — 03-01 schema + migration + tests complete
+Plan: 3 of 3
+Status: Ready to execute
+Last activity: 2026-07-02 — Phase 03 execution resumed (wave continue)
 
 Progress: [██░░░░░░░░] 20%
 
@@ -64,6 +64,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 02 P04 | 8m | 2 tasks | 3 files |
 | Phase 02 P05 | 15m | 2 tasks | 3 files |
 | Phase 03 P01 | 10m | 2 tasks | 4 files |
+| Phase 03 P02 | 12m | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,7 @@ Recent decisions affecting current work:
 - [03-01]: Baseline migration required when transitioning from prisma db push to prisma migrate — use migrate resolve --applied to mark existing tables without re-running SQL
 - [03-01]: reason stored as display label string ("Purchase Received" etc.) — Zod enum validates, no kebab transformation needed
 - [03-01]: SELECT FOR UPDATE via tx.$queryRaw used in existing stock-transactions.ts (confirmed exceeds D-05 spec)
+- [Phase ?]: [03-02]: zodResolver(schema) as any cast applied to stock-client.tsx useForm calls to resolve z.preprocess/RHF type mismatch, matching existing products-client.tsx convention
 
 ### Pending Todos
 
@@ -112,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-01T22:03:00.000Z
+Last session: 2026-07-02T00:29:39.402Z
 Stopped at: Phase 03 Plan 01 complete
 Resume file: .planning/phases/03-warehouse/03-02-PLAN.md
