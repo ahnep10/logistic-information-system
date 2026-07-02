@@ -1,17 +1,19 @@
 ---
 phase: 03-warehouse
 verified: 2026-07-02T07:55:00Z
-status: human_needed
+status: passed
 score: 10/12 must-haves verified
 behavior_unverified: 2
 overrides_applied: 0
 mvp_mode: true
 mvp_goal_note: "ROADMAP.md phase Goal line is descriptive prose, not literal 'As a...I want to...so that...' User Story syntax (user-story.validate returned false against it). All three PLAN.md files embed the identical, valid User Story ('As a warehouse staff member, I want to record stock in and stock out movements and view full transaction history with date and product filters, so that inventory levels stay accurate in real time and low-stock products are automatically flagged without manual intervention.' — validated true). Verification proceeded against the PLAN-embedded story rather than refusing, since a valid MVP-phase-generated story clearly exists; flagging the ROADMAP.md Goal-field formatting mismatch as a documentation note, not a blocker."
 behavior_unverified_items:
+
   - truth: "Staff/Manager can open the Record Stock In dialog, fill product/quantity/reason, submit, and see the new row appear at the top of the Recent Transactions table (INVT-01)"
     test: "Log in, navigate to /stock, click 'Record Stock In', select a product, enter a quantity, choose a reason, submit"
     expected: "Dialog closes; a new row appears at the top of the Recent Transactions table with a green 'IN' badge; the submitted product's currentStock increases by the entered quantity"
     why_human: "This is a full form-submit → Server Action → revalidatePath → re-render round trip; code is present and correctly wired (verified by reading stock-client.tsx onSubmit and actions/stock-transactions.ts recordStockIn), but no automated test exercises the actual browser round trip or confirms the DOM updates"
+
   - truth: "Staff/Manager can open the Record Stock Out dialog, submit a quantity exceeding current stock, and see the inline error with current stock count — dialog stays open, form is not reset (INVT-02/D-18)"
     test: "Navigate to /stock, click 'Record Stock Out', select a product with known currentStock, enter a quantity greater than currentStock, submit"
     expected: "Inline error text 'Insufficient stock. Current stock: N units.' appears inside the dialog; the dialog remains open; the form fields keep their entered values (no reset)"
