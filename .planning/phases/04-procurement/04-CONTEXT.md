@@ -36,6 +36,7 @@ Stub page at `/purchase-orders` exists from Phase 1 scaffolding — replace it w
 - **D-11:** The receive screen pre-fills each line item's received quantity with the ordered quantity, but staff can edit it before confirming (handles real-world discrepancies like short shipments). This is still a single all-lines-at-once confirmation, not a running partial state.
 - **D-12:** Receiving creates exactly one `StockTransaction` per line item (matching the existing schema's one-product-per-row shape), each with `quantity = receivedQuantity` (the staff-corrected value, not the original ordered quantity). All line-item stock transactions plus the PO status update to `RECEIVED` happen inside a single `prisma.$transaction`, reusing the Phase 3 D-05/D-06/D-07 atomic-mutation pattern (including the no-negative-stock guard, though stock-in can never go negative).
 - **D-13:** Generated stock-in transactions use `reason = "Purchase Received"` (reusing the exact Phase 3 D-02 label) and set the new `purchaseOrderId` FK to link back to the PO.
+- **D-22:** The goods-receipt Server Action must row-lock the `PurchaseOrder` itself, not just the `Product` rows. Inside the same `prisma.$transaction`, issue `SELECT ... FOR UPDATE` on the target `PurchaseOrder` row (via `tx.$queryRaw`, matching the Phase 3 D-05/03-01 `SELECT FOR UPDATE` convention), then re-check `status === "ORDERED"` *after* the lock is acquired — before creating any `StockTransaction` rows or updating status to `RECEIVED`. If the re-check fails (already received by a concurrent request), throw and return an error (e.g. `{ error: "This purchase order has already been received." }`). This closes a double-receipt race: without locking the PO row, two concurrent receive attempts (double-click, retry, two staff members) could both pass the status check before either commits, producing duplicate `StockTransaction` rows and double-incrementing `Product.currentStock` for one physical shipment — violating the "Received is immutable, one atomic action" guarantee (D-10/D-17).
 
 ### Status Transitions & Permissions
 
@@ -51,9 +52,13 @@ Stub page at `/purchase-orders` exists from Phase 1 scaffolding — replace it w
 - **D-20:** PO detail is a dedicated page at `/purchase-orders/[id]`, not a Dialog/Sheet — shows header info (supplier, status, dates, created by), full line-item table with per-line subtotal and grand total, and contextual action buttons (Edit/Confirm/Receive/Delete) based on current status. Same dedicated-page rationale as D-05; also where the receive-quantity-editing UI (D-11) lives.
 - **D-21:** `poNumber` is formatted for display as `PO-{poNumber, zero-padded to 4 digits}` (e.g., `PO-0001`) — never the raw cuid `id`, which is impractical for staff to reference verbally or on paper during receiving.
 
+### Decimal Serialization (Server → Client boundary)
+
+- **D-23:** `PurchaseOrder.totalAmount`, `PurchaseOrderLineItem.unitPrice`, and any computed line subtotals are Prisma `Decimal` instances (class objects with methods), not plain JS primitives. Every Decimal value MUST be explicitly converted via `.toNumber()` (for arithmetic/display formatting) or `.toString()` inside the Server Component — before being passed as props to any Client Component. This applies to the `/purchase-orders` list page, the `/purchase-orders/[id]` detail page, and the receive-quantity-editing UI. Passing a raw Decimal instance across the Server→Client boundary throws "Only plain objects can be passed to Client Components from Server Components" — the same class of RSC serialization error already hit once in this codebase with Lucide icon components (Phase 1, `01-02-SUMMARY.md`: fixed by passing `ReactNode` instead of a component reference). Server Actions receiving these values back from client-submitted forms must parse the string/number back into `Decimal` (e.g. `new Prisma.Decimal(value)`) before writing to the DB.
+
 ### Claude's Discretion
 
-- Exact Prisma `Decimal` vs `Int` (cents) representation for `unitPrice`/`totalAmount` — Claude decides based on Prisma 6 Decimal handling and existing schema conventions (no money fields exist yet in this codebase).
+- Exact Prisma `Decimal` vs `Int` (cents) internal storage representation for `unitPrice`/`totalAmount` — Claude decides based on Prisma 6 Decimal handling and existing schema conventions (no money fields exist yet in this codebase). Regardless of storage choice, D-23's Server→Client conversion rule applies to whatever the DB layer returns.
 - Zod validation schema location: `lib/validations/purchase-order.ts`, following the established pattern.
 - Line-item table styling and responsive behavior on the create/detail pages — follow Phase 2/3 table conventions.
 - Badge variants for DRAFT/ORDERED/RECEIVED status — pick colors consistent with existing severity/type badge conventions (e.g., neutral/blue/green).
@@ -78,6 +83,8 @@ Stub page at `/purchase-orders` exists from Phase 1 scaffolding — replace it w
 - `.planning/phases/03-warehouse/03-CONTEXT.md` — D-01 through D-07 (StockTransaction schema + atomic mutation pattern this phase reuses for goods receipt), D-02 (exact "Purchase Received" reason label)
 - `.planning/phases/02-catalog/02-CONTEXT.md` — D-06/D-07 (severity tier logic, referenced but not modified), D-11 (only isActive products in transaction dropdowns — same rule applies to PO line items)
 - `.planning/phases/01-foundation/01-CONTEXT.md` — role structure, RBAC enforcement pattern, dialog UX conventions
+- `.planning/phases/01-foundation/01-02-SUMMARY.md` — prior RSC serialization fix precedent ("Functions cannot be passed directly to Client Components") that D-23's Decimal-conversion rule is modeled on
+- `.planning/phases/03-warehouse/03-01-SUMMARY.md` — confirms the `SELECT FOR UPDATE` via `tx.$queryRaw` pattern (D-22 applies the same technique to the `PurchaseOrder` row)
 
 ### Implementation Patterns to Follow
 
