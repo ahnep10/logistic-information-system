@@ -9,34 +9,42 @@ export default async function PurchaseOrderDetailPage({
 }) {
   const { id } = await params
 
-  const [po, suppliers, products] = await Promise.all([
-    prisma.purchaseOrder.findUnique({
-      where: { id },
-      include: {
-        supplier: true,
-        createdBy: { select: { name: true } },
-        lineItems: {
-          include: {
-            product: {
-              select: { id: true, name: true, sku: true, isActive: true },
-            },
+  const po = await prisma.purchaseOrder.findUnique({
+    where: { id },
+    include: {
+      supplier: true,
+      createdBy: { select: { name: true } },
+      lineItems: {
+        include: {
+          product: {
+            select: { id: true, name: true, sku: true, isActive: true },
           },
         },
       },
-    }),
+    },
+  })
+
+  if (!po) notFound()
+
+  // WR-06: include the PO's currently-referenced supplier/products even if
+  // they've since been deactivated, so editing a Draft doesn't render a
+  // blank Select or a raw product id in place of a name.
+  const referencedProductIds = po.lineItems.map((li) => li.productId)
+
+  const [suppliers, products] = await Promise.all([
     prisma.supplier.findMany({
-      where: { isActive: true },
+      where: { OR: [{ isActive: true }, { id: po.supplierId }] },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
     prisma.product.findMany({
-      where: { isActive: true },
+      where: {
+        OR: [{ isActive: true }, { id: { in: referencedProductIds } }],
+      },
       orderBy: { name: "asc" },
       select: { id: true, name: true, sku: true },
     }),
   ])
-
-  if (!po) notFound()
 
   const serializedPo = {
     id: po.id,
