@@ -319,7 +319,7 @@ export default function PurchaseOrderForm({
         {serverError && <p className="text-sm text-destructive mb-4 text-right">{serverError}</p>}
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline" render={<Link href="/purchase-orders" />}>
+          <Button variant="outline" nativeButton={false} render={<Link href="/purchase-orders" />}>
             Cancel
           </Button>
           <Button type="submit" className="bg-primary" disabled={form.formState.isSubmitting}>

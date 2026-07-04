@@ -54,7 +54,7 @@ export default function PurchaseOrdersClient({ purchaseOrders }: PurchaseOrdersC
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Purchase Orders</h1>
-        <Button className="bg-primary" render={<Link href="/purchase-orders/new" />}>
+        <Button className="bg-primary" nativeButton={false} render={<Link href="/purchase-orders/new" />}>
           <PackagePlus className="h-4 w-4 mr-2" />
           Create Purchase Order
         </Button>
