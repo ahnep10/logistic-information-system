@@ -103,7 +103,7 @@ model StockTransaction {
 
 model PurchaseOrder {
   id                String              @id @default(cuid())
-  poNumber          Int                 @default(autoincrement())
+  poNumber          Int                 @unique @default(autoincrement())
   supplierId        String
   supplier          Supplier            @relation(fields: [supplierId], references: [id])
   status            POStatus            @default(DRAFT)
