@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Auth, RBAC, and project scaffold — every subsequent route depends on this (completed 2026-06-30)
 - [x] **Phase 2: Catalog** - Product and supplier master data — foundational reference tables for all transactions (completed 2026-06-30)
 - [x] **Phase 3: Warehouse** - Stock transaction recording, inventory tracking, and low-stock alerts (completed 2026-07-02)
-- [ ] **Phase 4: Procurement** - Purchase order lifecycle from Draft through atomic goods receipt
+- [x] **Phase 4: Procurement** - Purchase order lifecycle from Draft through atomic goods receipt (completed 2026-07-04)
 - [ ] **Phase 5: Dashboard** - Real-time KPI summary and operational health view for managers
 - [ ] **Phase 6: Reports** - Inventory, movement, and PO reports with Excel export
 
@@ -129,7 +129,7 @@ Plans:
   4. A Received PO is fully immutable — no further status changes or edits are possible after receipt.
   5. PO list is filterable by status (Draft / Ordered / Received) and each PO shows its line items with computed total value on the detail page.
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans complete
 
 Plans:
 
@@ -144,7 +144,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04-04-PLAN.md — PO detail page (Draft/Ordered/Received states) + confirm/receive/delete Server Actions + end-to-end lifecycle checkpoint (PROC-02, PROC-03, PROC-04, PROC-05)
+- [x] 04-04-PLAN.md — PO detail page (Draft/Ordered/Received states) + confirm/receive/delete Server Actions + end-to-end lifecycle checkpoint (PROC-02, PROC-03, PROC-04, PROC-05)
 
 **UI hint**: yes
 
@@ -189,6 +189,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 6/6 | Complete    | 2026-06-30 |
 | 2. Catalog | 5/5 | Complete    | 2026-06-30 |
 | 3. Warehouse | 3/3 | Complete    | 2026-07-02 |
-| 4. Procurement | 3/4 | In Progress|  |
+| 4. Procurement | 4/4 | Complete   | 2026-07-04 |
 | 5. Dashboard | 0/TBD | Not started | - |
 | 6. Reports | 0/TBD | Not started | - |

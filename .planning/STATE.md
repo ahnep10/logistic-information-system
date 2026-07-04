@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 04
 current_phase_name: procurement
-status: executing
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-07-04T06:01:40.687Z"
+status: verifying
+stopped_at: Completed 04-04-PLAN.md — Phase 04 (procurement) fully complete
+last_updated: "2026-07-04T07:21:31.421Z"
 last_activity: 2026-07-04
 last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 18
-  completed_plans: 17
-  percent: 50
+  completed_plans: 18
+  percent: 67
 ---
 
 # Project State
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-07-02)
 
 ## Current Position
 
-Phase: 04 (procurement) — EXECUTING
+Phase: 04 (procurement) — COMPLETE
 Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-07-04 — Phase 04 execution started
+Status: Phase complete — ready for verification
+Last activity: 2026-07-04 — Phase 04 execution complete (04-04 confirm/receive/delete + detail page + lifecycle checkpoint approved)
 
-Progress: [█████░░░░░] 50% (3/6 phases)
+Progress: [██████░░░░] 67% (4/6 phases)
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Progress: [█████░░░░░] 50% (3/6 phases)
 | Phase 04 P01 | 10min | 2 tasks | 6 files |
 | Phase 04 P02 | 20min | 2 tasks | 2 files |
 | Phase 04-procurement P03 | 18min | 2 tasks | 3 files |
+| Phase 04 P04 | 25min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [04-02]: base-ui Button supports render={<Link/>} prop for polymorphic navigation-as-button rendering (verified via Button.d.ts BaseUIComponentProps)
 - [Phase ?]: [04-03]: updateDraftPurchaseOrder checks status === 'DRAFT' exactly (own check, not assertPOEditable) since ORDERED must also be non-editable (D-02/D-17)
 - [Phase ?]: [04-03]: zodResolver(createPurchaseOrderSchema) as any cast (Pitfall 3 convention) adds a 5th pre-accepted @typescript-eslint/no-explicit-any error to the tracked non-blocking ESLint gate concern
+- [Phase ?]: [04-04]: receivePurchaseOrder wraps its transaction in try/catch and surfaces the thrown Error message verbatim (matching stock-transactions.ts convention) so the D-22 'already been received' error reaches the client exactly as written
+- [Phase ?]: [04-04]: Draft state's Confirm Order/Delete Draft use one-shot AlertDialogs that close on failure and surface the error inline above the Details card, not left open inside the dialog
+- [Phase ?]: [04-04]: Phase 4 (Procurement) fully complete — PROC-02/03/04/05 delivered via row-locked atomic goods-receipt transaction and three-state PO detail page, end-to-end lifecycle checkpoint approved
 
 ### Pending Todos
 
@@ -129,7 +133,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-04T06:01:40.677Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-07-04T07:19:51.534Z
+Stopped at: Completed 04-04-PLAN.md — Phase 04 (procurement) fully complete
 Resume file: 
 None
