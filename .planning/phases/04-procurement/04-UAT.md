@@ -1,22 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 04-procurement
 source: [04-VERIFICATION.md]
 started: 2026-07-04T12:20:00Z
-updated: 2026-07-04T13:10:00Z
+updated: 2026-07-05T02:20:00Z
 ---
 
 ## Current Test
 
-number: 5
-name: Post-fix UI checks — Total visibility after receipt, deactivated-reference display when editing
-expected: |
-  (a) Receiving goods against an Ordered PO in the browser shows the order Total row
-  immediately after the page updates (not just after navigating away and back). (b)
-  Deactivating a supplier or line-item product referenced by an existing Draft PO, then
-  opening that Draft's edit view, shows the correct name in the Supplier Select and
-  line-item rows (not blank or a raw id).
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -64,8 +56,11 @@ note: |
 
 ### 5. Post-fix UI checks — Total visibility after receipt, deactivated-reference display when editing
 expected: (a) Receiving goods against an Ordered PO in the browser shows the order Total row immediately after the page updates (not just after navigating away and back). (b) Deactivating a supplier or line-item product referenced by an existing Draft PO, then opening that Draft's edit view, shows the correct name in the Supplier Select and line-item rows (not blank or a raw id).
-result: [pending]
+result: pass
 note: |
+  Part (a) confirmed by user in the browser: Total row appears immediately after receiving
+  goods against an Ordered PO.
+
   Part (b) — issue reported: Supplier Select showed the raw cuid instead of the supplier's
   name when editing a Draft PO. Reproduced (RTL render of po-form-client.tsx with a
   deactivated supplier: rendered "cmr0tyyb90004v1uw3m2nx459" instead of "aery"), then found
@@ -82,14 +77,12 @@ note: |
   "aery (inactive)" (not the raw cuid). Added 2 permanent regression tests to
   tests/purchase-order-form-select.test.tsx. Full suite: 52 passed, 0 regressions, tsc clean.
 
-  Part (a) still needs confirmation — awaiting user's manual check in the browser.
-
 ## Summary
 
 total: 5
-passed: 4
+passed: 5
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 
