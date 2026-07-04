@@ -65,6 +65,24 @@ note: |
 ### 5. Post-fix UI checks — Total visibility after receipt, deactivated-reference display when editing
 expected: (a) Receiving goods against an Ordered PO in the browser shows the order Total row immediately after the page updates (not just after navigating away and back). (b) Deactivating a supplier or line-item product referenced by an existing Draft PO, then opening that Draft's edit view, shows the correct name in the Supplier Select and line-item rows (not blank or a raw id).
 result: [pending]
+note: |
+  Part (b) — issue reported: Supplier Select showed the raw cuid instead of the supplier's
+  name when editing a Draft PO. Reproduced (RTL render of po-form-client.tsx with a
+  deactivated supplier: rendered "cmr0tyyb90004v1uw3m2nx459" instead of "aery"), then found
+  the bug is NOT specific to deactivated references — an ACTIVE supplier reproduced the same
+  raw-id display. Root cause: Base UI's Select.Value only resolves a label from a mounted
+  Select.Item, which never mounts until the popup opens; without an `items` prop on
+  Select.Root it falls back to the raw value on the initial closed render.
+
+  Fix: threaded supplier.isActive through page.tsx -> po-detail-client.tsx ->
+  po-form-client.tsx and passed an `items` map to the Supplier Select
+  (app/(protected)/purchase-orders/po-form-client.tsx), with an "(inactive)" suffix for a
+  deactivated reference (matching products-client.tsx's category convention). Re-verified:
+  active supplier now shows "Active Co" (not "sup_active_1"); deactivated supplier now shows
+  "aery (inactive)" (not the raw cuid). Added 2 permanent regression tests to
+  tests/purchase-order-form-select.test.tsx. Full suite: 52 passed, 0 regressions, tsc clean.
+
+  Part (a) still needs confirmation — awaiting user's manual check in the browser.
 
 ## Summary
 
