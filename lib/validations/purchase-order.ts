@@ -2,17 +2,29 @@ import { z } from "zod"
 
 const quantityField = z.preprocess(
   (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
-  z.number().int().min(1, "Quantity must be at least 1.")
+  z
+    .number()
+    .int()
+    .min(1, "Quantity must be at least 1.")
+    .max(1_000_000, "Quantity is too large.")
 )
 
 const unitPriceField = z.preprocess(
   (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
-  z.number().min(0, "Unit price cannot be negative.")
+  z
+    .number()
+    .finite("Unit price must be a finite number.")
+    .min(0, "Unit price cannot be negative.")
+    .max(999_999_999.99, "Unit price is too large.")
 )
 
 const receivedQuantityField = z.preprocess(
   (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
-  z.number().int().min(0, "Received quantity cannot be negative.")
+  z
+    .number()
+    .int()
+    .min(0, "Received quantity cannot be negative.")
+    .max(1_000_000, "Received quantity is too large.")
 )
 
 export const lineItemSchema = z.object({
@@ -46,7 +58,12 @@ export const receivePurchaseOrderSchema = z.object({
         receivedQuantity: receivedQuantityField,
       })
     )
-    .min(1),
+    .min(1)
+    .refine(
+      (items) =>
+        new Set(items.map((li) => li.lineItemId)).size === items.length,
+      { message: "Duplicate line item in receipt payload." }
+    ),
 })
 
 export function assertPOEditable(status: string): void {
