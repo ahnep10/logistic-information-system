@@ -4,20 +4,45 @@
  * Implementation notes:
  *   - Unit tests for Zod schema validation (createPurchaseOrderSchema, confirmPurchaseOrderSchema, receivePurchaseOrderSchema)
  *   - Unit tests for assertPOEditable immutability guard
- *   - Integration test stubs (it.todo) for Server Actions (receivePurchaseOrder, confirmPurchaseOrder) built in 04-04
- *   - No @prisma/client imports — unit tests are pure logic, no DB connection needed
+ *   - Integration tests for Server Actions (receivePurchaseOrder, confirmPurchaseOrder) mock
+ *     @/lib/prisma, @/lib/auth, and next/cache — no real DB connection needed (WR-08)
  *   - PROC-01/PROC-02: createPurchaseOrderSchema allows 0 line items on Draft save (D-08), rejects invalid line items
  *   - PROC-01: confirmPurchaseOrderSchema requires at least 1 line item at confirm time (D-08)
  *   - PROC-02: receivePurchaseOrderSchema allows receivedQuantity of 0, rejects negative values
  *   - PROC-03/PROC-04: assertPOEditable enforces RECEIVED immutability (D-17)
  */
 
+import { vi, beforeEach } from "vitest"
 import {
   createPurchaseOrderSchema,
   confirmPurchaseOrderSchema,
   receivePurchaseOrderSchema,
   assertPOEditable,
 } from "@/lib/validations/purchase-order"
+
+vi.mock("@/lib/auth", () => ({
+  auth: vi.fn(),
+}))
+
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    $transaction: vi.fn(),
+    purchaseOrder: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}))
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}))
+
+const { auth } = await import("@/lib/auth")
+const { prisma } = await import("@/lib/prisma")
+const { receivePurchaseOrder, confirmPurchaseOrder } = await import(
+  "@/actions/purchase-orders"
+)
 
 describe("Draft Purchase Order Validation — lib/validations/purchase-order.ts", () => {
   // D-08 | Draft POs may be saved with 0 line items
@@ -93,23 +118,184 @@ describe("Receive Purchase Order Validation — lib/validations/purchase-order.t
     })
     expect(result.success).toBe(false)
   })
+})
 
-  // 04-04 | Implementation: mock prisma.$transaction; assert PO row lock acquired via SELECT ... FOR UPDATE before any write
-  it.todo("receivePurchaseOrder acquires a PO row lock via SELECT ... FOR UPDATE before any write")
+describe("Receive Purchase Order Server Action — actions/purchase-orders.ts (WR-08)", () => {
+  // Records the order in which mocked tx methods are invoked, so tests can
+  // assert the row lock happens strictly before any other read/write.
+  let callOrder: string[]
 
-  // 04-04 | Implementation: mock prisma.$transaction; call receivePurchaseOrder on a PO whose status is not ORDERED
+  // Builds a fake `tx` (the callback argument to prisma.$transaction) whose
+  // $queryRaw resolves with the given PO status and whose
+  // purchaseOrderLineItem.findMany resolves with the given DB line items.
+  function makeTx(status: string, dbLineItems: Array<{ id: string; productId: string; quantity: number }>) {
+    return {
+      $queryRaw: vi.fn(() => {
+        callOrder.push("$queryRaw")
+        return Promise.resolve([{ status }])
+      }),
+      purchaseOrderLineItem: {
+        findMany: vi.fn(() => {
+          callOrder.push("purchaseOrderLineItem.findMany")
+          return Promise.resolve(dbLineItems)
+        }),
+        update: vi.fn(() => {
+          callOrder.push("purchaseOrderLineItem.update")
+          return Promise.resolve({})
+        }),
+      },
+      product: {
+        update: vi.fn(() => {
+          callOrder.push("product.update")
+          return Promise.resolve({})
+        }),
+      },
+      stockTransaction: {
+        create: vi.fn(() => {
+          callOrder.push("stockTransaction.create")
+          return Promise.resolve({})
+        }),
+      },
+      purchaseOrder: {
+        update: vi.fn(() => {
+          callOrder.push("purchaseOrder.update")
+          return Promise.resolve({})
+        }),
+      },
+    }
+  }
+
+  beforeEach(() => {
+    callOrder = []
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user_1" } } as never)
+    vi.mocked(prisma.$transaction).mockReset()
+  })
+
+  // 04-04 | mock prisma.$transaction; assert PO row lock acquired via SELECT ... FOR UPDATE before any write
+  it("receivePurchaseOrder acquires a PO row lock via SELECT ... FOR UPDATE before any write", async () => {
+    const tx = makeTx("ORDERED", [{ id: "li_1", productId: "prod_1", quantity: 5 }])
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
+
+    const fd = new FormData()
+    fd.append(
+      "lineItems",
+      JSON.stringify([{ lineItemId: "li_1", receivedQuantity: 5 }])
+    )
+    const result = await receivePurchaseOrder("po_1", fd)
+
+    expect(result).toEqual({ success: true })
+    expect(callOrder[0]).toBe("$queryRaw")
+    expect(callOrder.indexOf("$queryRaw")).toBeLessThan(
+      callOrder.indexOf("product.update")
+    )
+  })
+
+  // 04-04 | mock prisma.$transaction; call receivePurchaseOrder on a PO whose status is not ORDERED
   // Assert: receivePurchaseOrder returns { error: "This purchase order has already been received." } (D-22 double-receipt race)
-  it.todo("receivePurchaseOrder rejects when the PO status is not ORDERED (double-receipt race, D-22)")
+  it("receivePurchaseOrder rejects when the PO status is not ORDERED (double-receipt race, D-22)", async () => {
+    const tx = makeTx("RECEIVED", [{ id: "li_1", productId: "prod_1", quantity: 5 }])
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
 
-  // 04-04 | Implementation: mock prisma.$transaction; call receivePurchaseOrder with multiple line items
+    const fd = new FormData()
+    fd.append(
+      "lineItems",
+      JSON.stringify([{ lineItemId: "li_1", receivedQuantity: 5 }])
+    )
+    const result = await receivePurchaseOrder("po_1", fd)
+
+    expect(result).toEqual({
+      error: "This purchase order has already been received.",
+    })
+    expect(tx.product.update).not.toHaveBeenCalled()
+  })
+
+  // 04-04 | mock prisma.$transaction; call receivePurchaseOrder with multiple line items
   // Assert: one StockTransaction created per line with reason "Purchase Received" and purchaseOrderId set
-  it.todo("receivePurchaseOrder creates one StockTransaction per line with reason 'Purchase Received' and purchaseOrderId set")
+  it("receivePurchaseOrder creates one StockTransaction per line with reason 'Purchase Received' and purchaseOrderId set", async () => {
+    const dbLineItems = [
+      { id: "li_1", productId: "prod_1", quantity: 5 },
+      { id: "li_2", productId: "prod_2", quantity: 3 },
+    ]
+    const tx = makeTx("ORDERED", dbLineItems)
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
 
-  // 04-04 | Implementation: mock prisma.$transaction; assert tx.product.update called with { increment: receivedQuantity } per line
-  it.todo("receivePurchaseOrder increments Product.currentStock per line")
+    const fd = new FormData()
+    fd.append(
+      "lineItems",
+      JSON.stringify([
+        { lineItemId: "li_1", receivedQuantity: 5 },
+        { lineItemId: "li_2", receivedQuantity: 3 },
+      ])
+    )
+    const result = await receivePurchaseOrder("po_1", fd)
 
-  // 04-04 | Implementation: mock prisma.$transaction; assert tx.purchaseOrder.update called with status: RECEIVED
-  it.todo("receivePurchaseOrder updates purchase order status to RECEIVED")
+    expect(result).toEqual({ success: true })
+    expect(tx.stockTransaction.create).toHaveBeenCalledTimes(2)
+    expect(tx.stockTransaction.create).toHaveBeenNthCalledWith(1, {
+      data: expect.objectContaining({
+        reason: "Purchase Received",
+        purchaseOrderId: "po_1",
+        productId: "prod_1",
+        quantity: 5,
+      }),
+    })
+    expect(tx.stockTransaction.create).toHaveBeenNthCalledWith(2, {
+      data: expect.objectContaining({
+        reason: "Purchase Received",
+        purchaseOrderId: "po_1",
+        productId: "prod_2",
+        quantity: 3,
+      }),
+    })
+  })
+
+  // 04-04 | mock prisma.$transaction; assert tx.product.update called with { increment: receivedQuantity } per line
+  it("receivePurchaseOrder increments Product.currentStock per line", async () => {
+    const dbLineItems = [{ id: "li_1", productId: "prod_1", quantity: 5 }]
+    const tx = makeTx("ORDERED", dbLineItems)
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
+
+    const fd = new FormData()
+    fd.append(
+      "lineItems",
+      JSON.stringify([{ lineItemId: "li_1", receivedQuantity: 4 }])
+    )
+    await receivePurchaseOrder("po_1", fd)
+
+    expect(tx.product.update).toHaveBeenCalledWith({
+      where: { id: "prod_1" },
+      data: { currentStock: { increment: 4 } },
+    })
+  })
+
+  // 04-04 | mock prisma.$transaction; assert tx.purchaseOrder.update called with status: RECEIVED
+  it("receivePurchaseOrder updates purchase order status to RECEIVED", async () => {
+    const dbLineItems = [{ id: "li_1", productId: "prod_1", quantity: 5 }]
+    const tx = makeTx("ORDERED", dbLineItems)
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
+
+    const fd = new FormData()
+    fd.append(
+      "lineItems",
+      JSON.stringify([{ lineItemId: "li_1", receivedQuantity: 5 }])
+    )
+    await receivePurchaseOrder("po_1", fd)
+
+    expect(tx.purchaseOrder.update).toHaveBeenCalledWith({
+      where: { id: "po_1" },
+      data: { status: "RECEIVED" },
+    })
+  })
 })
 
 describe("assertPOEditable immutability guard — lib/validations/purchase-order.ts", () => {
@@ -125,9 +311,62 @@ describe("assertPOEditable immutability guard — lib/validations/purchase-order
   it("assertPOEditable does not throw when status is immutable-safe ORDERED", () => {
     expect(() => assertPOEditable("ORDERED")).not.toThrow()
   })
+})
 
-  // D-16 | stale-reference re-validation is implemented in 04-04's confirmPurchaseOrder
-  it.todo(
-    "confirmPurchaseOrder rejects when supplier or a line-item product has been deactivated since Draft creation (D-16)"
-  )
+describe("Confirm Purchase Order Server Action — actions/purchase-orders.ts (WR-08, D-16)", () => {
+  beforeEach(() => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user_1" } } as never)
+    vi.mocked(prisma.purchaseOrder.findUnique).mockReset()
+    vi.mocked(prisma.purchaseOrder.update).mockReset()
+  })
+
+  // D-16 | stale-reference re-validation: a deactivated supplier blocks confirmation
+  it("confirmPurchaseOrder rejects when the supplier has been deactivated since Draft creation (D-16)", async () => {
+    vi.mocked(prisma.purchaseOrder.findUnique).mockResolvedValue({
+      id: "po_1",
+      status: "DRAFT",
+      supplier: { name: "Acme Supplies", isActive: false },
+      lineItems: [
+        {
+          productId: "prod_1",
+          quantity: 2,
+          unitPrice: { toNumber: () => 10 },
+          product: { name: "Widget", isActive: true },
+        },
+      ],
+    } as never)
+
+    const result = await confirmPurchaseOrder("po_1")
+
+    expect(result).toEqual({
+      error:
+        "Cannot confirm — Acme Supplies has been deactivated. Update this purchase order before confirming.",
+    })
+    expect(prisma.purchaseOrder.update).not.toHaveBeenCalled()
+  })
+
+  // D-16 | stale-reference re-validation: a deactivated line-item product blocks confirmation
+  it("confirmPurchaseOrder rejects when a line-item product has been deactivated since Draft creation (D-16)", async () => {
+    vi.mocked(prisma.purchaseOrder.findUnique).mockResolvedValue({
+      id: "po_1",
+      status: "DRAFT",
+      supplier: { name: "Acme Supplies", isActive: true },
+      lineItems: [
+        {
+          productId: "prod_1",
+          quantity: 2,
+          unitPrice: { toNumber: () => 10 },
+          product: { name: "Widget", isActive: false },
+        },
+      ],
+    } as never)
+
+    const result = await confirmPurchaseOrder("po_1")
+
+    expect(result).toEqual({
+      error:
+        "Cannot confirm — Widget has been deactivated. Update this purchase order before confirming.",
+    })
+    expect(prisma.purchaseOrder.update).not.toHaveBeenCalled()
+  })
 })
