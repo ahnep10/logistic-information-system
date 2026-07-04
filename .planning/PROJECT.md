@@ -19,13 +19,11 @@ Give managers a single real-time source of truth for inventory and procurement s
 - ✓ System tracks current inventory levels per product — Phase 03 (atomic `$transaction` + DB-level `CHECK (currentStock >= 0)`)
 - ✓ Staff can record stock-in and stock-out transactions with reasons — Phase 03 (`/stock` page, INVT-01/INVT-02)
 - ✓ Full stock movement history is available per product — Phase 03 (`/inventory` page, filterable by product/date/type, INVT-05)
+- ✓ Staff can create purchase orders with line items and submit them (Draft → Ordered) — Phase 04
+- ✓ Staff can receive goods against a purchase order (Ordered → Received) and update inventory — Phase 04 (row-locked atomic goods-receipt transaction)
+- ✓ PO status is visible across all lifecycle stages (Draft, Ordered, Received) — Phase 04 (three-state PO detail page)
 
 ### Active
-
-**Procurement**
-- [ ] Staff can create purchase orders with line items and submit them (Draft → Ordered)
-- [ ] Staff can receive goods against a purchase order (Ordered → Received) and update inventory
-- [ ] PO status is visible across all lifecycle stages (Draft, Ordered, Received)
 
 **Management Dashboard & Reporting**
 - [ ] Dashboard displays real-time KPIs: total products, total suppliers, stock movements today, low-stock count
@@ -71,6 +69,8 @@ Give managers a single real-time source of truth for inventory and procurement s
 | Stock mutations are atomic: `prisma.$transaction` + `SELECT ... FOR UPDATE` + DB-level `CHECK (currentStock >= 0)` | Two independent layers (app-level row lock + hard DB floor) prevent negative stock even under concurrent writes; DB constraint is the backstop if application logic is ever bypassed | Applied Phase 03; behaviorally verified by direct DB test in 03-VERIFICATION.md (raw SQL decrement below zero was rejected by Postgres) |
 | URL-param-driven filters (not client-side array filtering) for `/inventory` history | Server Component rebuilds the Prisma `where` clause from `searchParams` on every navigation; keeps filter state shareable via URL and avoids fetching unfiltered data to the client | Applied Phase 03; reuse pattern for Phase 6 report filters |
 | `zodResolver(schema) as any` cast in React Hook Form `useForm` calls | Resolves a `z.preprocess`/RHF resolver type mismatch on numeric fields; matches existing convention in `products-client.tsx` | Applied Phase 02–03; follow same cast when adding new numeric-coerced forms |
+| Row-locked transaction (`SELECT ... FOR UPDATE` + validate + write, all inside one `prisma.$transaction`) for any Server Action whose write depends on a prior read | A plain status-filtered `updateMany`/`deleteMany` (CR-01) only protects actions that write the SAME column their guard checks; `confirmPurchaseOrder`'s status write didn't protect its D-08/D-16 validation (read on `lineItems`/`supplier`, write on `status`) from a concurrent edit — closed by moving read+validate+write into one locked transaction (Phase 04 UAT, discovered via a real-Postgres concurrency test) | Applied Phase 04; use this pattern for any future action combining a stale-read validation with a delayed write |
+| Base UI `Select.Root` requires an `items` prop for `Select.Value` to show a label on initial render | Without `items`, `Select.Value` displays the raw `value` until the popup's `Select.Item` has mounted at least once — affects any edit-mode Select pre-populated with a real value, not just deactivated references | Applied to `po-form-client.tsx` supplierId Select (Phase 04); other pre-populated Selects app-wide (e.g. `products-client.tsx` categoryId) may have the same latent bug — worth an audit pass |
 
 ## Evolution
 
@@ -90,4 +90,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-02 after Phase 03 (warehouse)*
+*Last updated: 2026-07-05 after Phase 04 (procurement)*
