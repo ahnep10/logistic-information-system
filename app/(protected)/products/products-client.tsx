@@ -269,7 +269,7 @@ function CreateProductDialog({ categories }: { categories: Category[] }) {
                   <FormLabel>Category</FormLabel>
                   {categories.length === 0 ? (
                     <>
-                      <Select disabled>
+                      <Select disabled value="">
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="No active categories" />
@@ -283,8 +283,8 @@ function CreateProductDialog({ categories }: { categories: Category[] }) {
                     </>
                   ) : (
                     <Select
+                      value={field.value ?? ""}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -448,8 +448,8 @@ function EditProductDialog({
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <Select
+                    value={field.value ?? ""}
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>

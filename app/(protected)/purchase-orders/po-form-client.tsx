@@ -175,7 +175,7 @@ export default function PurchaseOrderForm({
                 <FormItem>
                   <FormLabel>Supplier</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a supplier" />
                       </SelectTrigger>

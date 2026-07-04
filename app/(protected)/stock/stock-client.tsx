@@ -202,7 +202,7 @@ function RecordStockInDialog({ products }: { products: Product[] }) {
                 <FormItem>
                   <FormLabel>Product</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a product" />
                       </SelectTrigger>
@@ -239,7 +239,7 @@ function RecordStockInDialog({ products }: { products: Product[] }) {
                 <FormItem>
                   <FormLabel>Reason</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a reason" />
                       </SelectTrigger>
@@ -337,7 +337,7 @@ function RecordStockOutDialog({ products }: { products: Product[] }) {
                 <FormItem>
                   <FormLabel>Product</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a product" />
                       </SelectTrigger>
@@ -374,7 +374,7 @@ function RecordStockOutDialog({ products }: { products: Product[] }) {
                 <FormItem>
                   <FormLabel>Reason</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a reason" />
                       </SelectTrigger>
