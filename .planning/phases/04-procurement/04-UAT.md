@@ -3,18 +3,18 @@ status: testing
 phase: 04-procurement
 source: [04-VERIFICATION.md]
 started: 2026-07-04T12:20:00Z
-updated: 2026-07-04T12:35:00Z
+updated: 2026-07-04T12:45:00Z
 ---
 
 ## Current Test
 
-number: 3
-name: Received-PO immutability via direct Server Action calls (bypassing UI)
+number: 4
+name: Concurrent update/delete/confirm race
 expected: |
-  Directly calling updateDraftPurchaseOrder(receivedPoId, formData) and
-  deletePurchaseOrder(receivedPoId) against a PO whose status is already RECEIVED both
-  return their respective "Only Draft purchase orders can be..." error and make no
-  database writes.
+  Firing two near-simultaneous requests at the same Draft PO (e.g. one
+  updateDraftPurchaseOrder and one confirmPurchaseOrder, or two deletePurchaseOrder
+  calls) against the real Postgres instance results in exactly one succeeding and the
+  other rejected cleanly with no partial/corrupted state.
 awaiting: user response
 
 ## Tests
@@ -30,7 +30,8 @@ note: Not covered by prior test suite (only schema-level 0/negative receivedQuan
 
 ### 3. Received-PO immutability via direct Server Action calls (bypassing UI)
 expected: Directly calling updateDraftPurchaseOrder(receivedPoId, formData) and deletePurchaseOrder(receivedPoId) against a PO whose status is already RECEIVED both return their respective "Only Draft purchase orders can be..." error and make no database writes.
-result: [pending]
+result: pass
+note: Not covered by prior test suite (only assertPOEditable, a different guard used solely by confirmPurchaseOrder, was tested). Added two real Server-Action-level tests in tests/purchase-orders.test.ts mocking the status-filtered updateMany/deleteMany calls to return count:0 (what actually happens against a RECEIVED PO), asserting the exact error messages and zero downstream writes. `npx vitest run tests/purchase-orders.test.ts` — 22/22 passed.
 
 ### 4. Concurrent update/delete/confirm race
 expected: Firing two near-simultaneous requests at the same Draft PO (e.g. one updateDraftPurchaseOrder and one confirmPurchaseOrder, or two deletePurchaseOrder calls) against the real Postgres instance results in exactly one succeeding and the other rejected cleanly with no partial/corrupted state.
@@ -43,9 +44,9 @@ result: [pending]
 ## Summary
 
 total: 5
-passed: 2
+passed: 3
 issues: 0
-pending: 3
+pending: 2
 skipped: 0
 blocked: 0
 

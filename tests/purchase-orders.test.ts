@@ -10,6 +10,8 @@
  *   - PROC-01: confirmPurchaseOrderSchema requires at least 1 line item at confirm time (D-08)
  *   - PROC-02: receivePurchaseOrderSchema allows receivedQuantity of 0, rejects negative values
  *   - PROC-03/PROC-04: assertPOEditable enforces RECEIVED immutability (D-17)
+ *   - PROC-03/PROC-04: updateDraftPurchaseOrder/deletePurchaseOrder reject a RECEIVED PO
+ *     via their status-filtered updateMany/deleteMany (D-17, CR-01) with zero writes
  */
 
 import { vi, beforeEach } from "vitest"
@@ -30,6 +32,7 @@ vi.mock("@/lib/prisma", () => ({
     purchaseOrder: {
       findUnique: vi.fn(),
       update: vi.fn(),
+      deleteMany: vi.fn(),
     },
   },
 }))
@@ -40,9 +43,12 @@ vi.mock("next/cache", () => ({
 
 const { auth } = await import("@/lib/auth")
 const { prisma } = await import("@/lib/prisma")
-const { receivePurchaseOrder, confirmPurchaseOrder } = await import(
-  "@/actions/purchase-orders"
-)
+const {
+  receivePurchaseOrder,
+  confirmPurchaseOrder,
+  updateDraftPurchaseOrder,
+  deletePurchaseOrder,
+} = await import("@/actions/purchase-orders")
 
 describe("Draft Purchase Order Validation — lib/validations/purchase-order.ts", () => {
   // D-08 | Draft POs may be saved with 0 line items
@@ -419,5 +425,57 @@ describe("Confirm Purchase Order Server Action — actions/purchase-orders.ts (W
         "Cannot confirm — Widget has been deactivated. Update this purchase order before confirming.",
     })
     expect(prisma.purchaseOrder.update).not.toHaveBeenCalled()
+  })
+})
+
+describe("RECEIVED-PO immutability via direct Server Action calls (D-17, CR-01)", () => {
+  beforeEach(() => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user_1" } } as never)
+    vi.mocked(prisma.purchaseOrder.deleteMany).mockReset()
+    vi.mocked(prisma.$transaction).mockReset()
+  })
+
+  // D-17 | updateDraftPurchaseOrder's status filter matches 0 rows for a RECEIVED PO
+  // (its updateMany({ where: { id, status: "DRAFT" } }) excludes it) -> rejected, no write
+  it("updateDraftPurchaseOrder rejects a RECEIVED purchase order with no database write", async () => {
+    const txUpdateMany = vi.fn(() => Promise.resolve({ count: 0 }))
+    const txLineItemDeleteMany = vi.fn()
+    const txLineItemCreateMany = vi.fn()
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) =>
+        callback({
+          purchaseOrder: { updateMany: txUpdateMany },
+          purchaseOrderLineItem: {
+            deleteMany: txLineItemDeleteMany,
+            createMany: txLineItemCreateMany,
+          },
+        })
+    )
+
+    const fd = new FormData()
+    fd.append("supplierId", "sup_1")
+    fd.append("lineItems", JSON.stringify([]))
+    const result = await updateDraftPurchaseOrder("po_received", fd)
+
+    expect(result).toEqual({ error: "Only Draft purchase orders can be edited." })
+    expect(txUpdateMany).toHaveBeenCalledWith({
+      where: { id: "po_received", status: "DRAFT" },
+      data: expect.objectContaining({ supplierId: "sup_1" }),
+    })
+    expect(txLineItemDeleteMany).not.toHaveBeenCalled()
+    expect(txLineItemCreateMany).not.toHaveBeenCalled()
+  })
+
+  // D-17 | deletePurchaseOrder's deleteMany({ where: { id, status: "DRAFT" } }) matches
+  // 0 rows for a RECEIVED PO -> rejected, no write
+  it("deletePurchaseOrder rejects a RECEIVED purchase order with no database write", async () => {
+    vi.mocked(prisma.purchaseOrder.deleteMany).mockResolvedValue({ count: 0 } as never)
+
+    const result = await deletePurchaseOrder("po_received")
+
+    expect(result).toEqual({ error: "Only Draft purchase orders can be deleted." })
+    expect(prisma.purchaseOrder.deleteMany).toHaveBeenCalledWith({
+      where: { id: "po_received", status: "DRAFT" },
+    })
   })
 })
