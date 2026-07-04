@@ -255,6 +255,7 @@ export default function PurchaseOrderDetailClient({
         setActionError(result.error)
         return
       }
+      setReceiveMode(false)
       router.refresh()
     } catch {
       setActionError("Failed to receive purchase order. Please try again.")
