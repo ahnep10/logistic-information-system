@@ -129,7 +129,7 @@ Plans:
   4. A Received PO is fully immutable — no further status changes or edits are possible after receipt.
   5. PO list is filterable by status (Draft / Ordered / Received) and each PO shows its line items with computed total value on the detail page.
 
-**Plans**: 2/4 plans executed
+**Plans**: 3/4 plans executed
 
 Plans:
 
@@ -140,7 +140,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 04-02-PLAN.md — PO list page with status Tabs filter (PROC-05)
-- [ ] 04-03-PLAN.md — Draft PO creation flow: Server Actions + /purchase-orders/new + shared line-item form (PROC-01)
+- [x] 04-03-PLAN.md — Draft PO creation flow: Server Actions + /purchase-orders/new + shared line-item form (PROC-01)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -189,6 +189,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 6/6 | Complete    | 2026-06-30 |
 | 2. Catalog | 5/5 | Complete    | 2026-06-30 |
 | 3. Warehouse | 3/3 | Complete    | 2026-07-02 |
-| 4. Procurement | 2/4 | In Progress|  |
+| 4. Procurement | 3/4 | In Progress|  |
 | 5. Dashboard | 0/TBD | Not started | - |
 | 6. Reports | 0/TBD | Not started | - |
