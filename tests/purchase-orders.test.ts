@@ -371,17 +371,38 @@ describe("assertPOEditable immutability guard — lib/validations/purchase-order
 })
 
 describe("Confirm Purchase Order Server Action — actions/purchase-orders.ts (WR-08, D-16)", () => {
+  // Builds a fake `tx` (the callback argument to prisma.$transaction) matching
+  // confirmPurchaseOrder's row-locked read -> validate -> atomic-write shape.
+  function makeConfirmTx(
+    status: string,
+    po: {
+      supplier: { name: string; isActive: boolean }
+      lineItems: Array<{
+        productId: string
+        quantity: number
+        unitPrice: { toNumber: () => number }
+        product: { name: string; isActive: boolean }
+      }>
+    },
+    updateManyCount = 1
+  ) {
+    return {
+      $queryRaw: vi.fn(() => Promise.resolve([{ status }])),
+      purchaseOrder: {
+        findUniqueOrThrow: vi.fn(() => Promise.resolve(po)),
+        updateMany: vi.fn(() => Promise.resolve({ count: updateManyCount })),
+      },
+    }
+  }
+
   beforeEach(() => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user_1" } } as never)
-    vi.mocked(prisma.purchaseOrder.findUnique).mockReset()
-    vi.mocked(prisma.purchaseOrder.update).mockReset()
+    vi.mocked(prisma.$transaction).mockReset()
   })
 
   // D-16 | stale-reference re-validation: a deactivated supplier blocks confirmation
   it("confirmPurchaseOrder rejects when the supplier has been deactivated since Draft creation (D-16)", async () => {
-    vi.mocked(prisma.purchaseOrder.findUnique).mockResolvedValue({
-      id: "po_1",
-      status: "DRAFT",
+    const tx = makeConfirmTx("DRAFT", {
       supplier: { name: "Acme Supplies", isActive: false },
       lineItems: [
         {
@@ -391,7 +412,10 @@ describe("Confirm Purchase Order Server Action — actions/purchase-orders.ts (W
           product: { name: "Widget", isActive: true },
         },
       ],
-    } as never)
+    })
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
 
     const result = await confirmPurchaseOrder("po_1")
 
@@ -399,14 +423,12 @@ describe("Confirm Purchase Order Server Action — actions/purchase-orders.ts (W
       error:
         "Cannot confirm — Acme Supplies has been deactivated. Update this purchase order before confirming.",
     })
-    expect(prisma.purchaseOrder.update).not.toHaveBeenCalled()
+    expect(tx.purchaseOrder.updateMany).not.toHaveBeenCalled()
   })
 
   // D-16 | stale-reference re-validation: a deactivated line-item product blocks confirmation
   it("confirmPurchaseOrder rejects when a line-item product has been deactivated since Draft creation (D-16)", async () => {
-    vi.mocked(prisma.purchaseOrder.findUnique).mockResolvedValue({
-      id: "po_1",
-      status: "DRAFT",
+    const tx = makeConfirmTx("DRAFT", {
       supplier: { name: "Acme Supplies", isActive: true },
       lineItems: [
         {
@@ -416,7 +438,10 @@ describe("Confirm Purchase Order Server Action — actions/purchase-orders.ts (W
           product: { name: "Widget", isActive: false },
         },
       ],
-    } as never)
+    })
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
 
     const result = await confirmPurchaseOrder("po_1")
 
@@ -424,7 +449,36 @@ describe("Confirm Purchase Order Server Action — actions/purchase-orders.ts (W
       error:
         "Cannot confirm — Widget has been deactivated. Update this purchase order before confirming.",
     })
-    expect(prisma.purchaseOrder.update).not.toHaveBeenCalled()
+    expect(tx.purchaseOrder.updateMany).not.toHaveBeenCalled()
+  })
+
+  // CR-01 follow-up | the row-locked read confirms status === "DRAFT" but the
+  // defense-in-depth updateMany still returns count 0 (e.g. status flipped
+  // between the lock and this statement in a way the lock itself couldn't
+  // prevent) -> confirmPurchaseOrder must reject, not silently report success
+  it("confirmPurchaseOrder rejects when the atomic status-filtered updateMany matches 0 rows", async () => {
+    const tx = makeConfirmTx(
+      "DRAFT",
+      {
+        supplier: { name: "Acme Supplies", isActive: true },
+        lineItems: [
+          {
+            productId: "prod_1",
+            quantity: 2,
+            unitPrice: { toNumber: () => 10 },
+            product: { name: "Widget", isActive: true },
+          },
+        ],
+      },
+      0
+    )
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
+
+    const result = await confirmPurchaseOrder("po_1")
+
+    expect(result).toEqual({ error: "Only Draft purchase orders can be confirmed." })
   })
 })
 

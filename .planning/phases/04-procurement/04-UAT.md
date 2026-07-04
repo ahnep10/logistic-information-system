@@ -3,18 +3,19 @@ status: testing
 phase: 04-procurement
 source: [04-VERIFICATION.md]
 started: 2026-07-04T12:20:00Z
-updated: 2026-07-04T12:45:00Z
+updated: 2026-07-04T13:10:00Z
 ---
 
 ## Current Test
 
-number: 4
-name: Concurrent update/delete/confirm race
+number: 5
+name: Post-fix UI checks — Total visibility after receipt, deactivated-reference display when editing
 expected: |
-  Firing two near-simultaneous requests at the same Draft PO (e.g. one
-  updateDraftPurchaseOrder and one confirmPurchaseOrder, or two deletePurchaseOrder
-  calls) against the real Postgres instance results in exactly one succeeding and the
-  other rejected cleanly with no partial/corrupted state.
+  (a) Receiving goods against an Ordered PO in the browser shows the order Total row
+  immediately after the page updates (not just after navigating away and back). (b)
+  Deactivating a supplier or line-item product referenced by an existing Draft PO, then
+  opening that Draft's edit view, shows the correct name in the Supplier Select and
+  line-item rows (not blank or a raw id).
 awaiting: user response
 
 ## Tests
@@ -35,7 +36,31 @@ note: Not covered by prior test suite (only assertPOEditable, a different guard 
 
 ### 4. Concurrent update/delete/confirm race
 expected: Firing two near-simultaneous requests at the same Draft PO (e.g. one updateDraftPurchaseOrder and one confirmPurchaseOrder, or two deletePurchaseOrder calls) against the real Postgres instance results in exactly one succeeding and the other rejected cleanly with no partial/corrupted state.
-result: [pending]
+result: pass
+note: |
+  Verified with a new real-Postgres integration suite (tests/purchase-orders-concurrency.test.ts,
+  no prisma mocking, hits the actual docker `logistic-postgres` dev DB). Two of the four scenarios
+  tested confirmed CR-01's existing updateMany/deleteMany status-filter guard works correctly at
+  the DB level (delete-vs-delete, update-vs-delete: exactly one wins, no partial state).
+
+  The update-vs-confirm scenario surfaced a genuine gap CR-01 did not close: confirmPurchaseOrder's
+  final write was a plain `prisma.purchaseOrder.update` (no status filter), reading po.lineItems/
+  supplier via an earlier unlocked findUnique. Since updateDraftPurchaseOrder never touches the
+  `status` column, a mere status-filtered updateMany on confirm's write does NOT prevent it from
+  committing based on stale (pre-edit) line items -- confirmed empirically: both operations reported
+  success under real concurrency before any behavioral fix.
+
+  Fix applied (actions/purchase-orders.ts, confirmPurchaseOrder): moved the read, D-08 (line-item
+  count) and D-16 (active supplier/product) validation, and the atomic status-filtered write all
+  inside one `prisma.$transaction` that acquires a row lock via `SELECT ... FOR UPDATE` as its first
+  statement (matching the existing receivePurchaseOrder pattern) -- so confirm always validates the
+  CURRENT line items, whichever operation actually wins the race.
+
+  Re-verified: `npx vitest run tests/purchase-orders-concurrency.test.ts` -- 4/4 passed, including a
+  new regression test proving confirm never finalizes ORDERED against 0 (stale pre-edit) line items.
+  Existing mocked confirmPurchaseOrder tests in tests/purchase-orders.test.ts updated for the new
+  tx-based shape and a new case (updateMany count:0 defense-in-depth) added -- 23/23 passed.
+  Full suite: `npx vitest run` -- 50 passed, 18 pre-existing todo, 0 regressions. `tsc --noEmit` clean.
 
 ### 5. Post-fix UI checks — Total visibility after receipt, deactivated-reference display when editing
 expected: (a) Receiving goods against an Ordered PO in the browser shows the order Total row immediately after the page updates (not just after navigating away and back). (b) Deactivating a supplier or line-item product referenced by an existing Draft PO, then opening that Draft's edit view, shows the correct name in the Supplier Select and line-item rows (not blank or a raw id).
@@ -44,9 +69,9 @@ result: [pending]
 ## Summary
 
 total: 5
-passed: 3
+passed: 4
 issues: 0
-pending: 2
+pending: 1
 skipped: 0
 blocked: 0
 

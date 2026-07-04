@@ -126,66 +126,86 @@ export async function confirmPurchaseOrder(id: string) {
   const session = await auth()
   if (!session?.user?.id) return { error: "Unauthorized" }
 
-  const po = await prisma.purchaseOrder.findUnique({
-    where: { id },
-    include: {
-      supplier: { select: { name: true, isActive: true } },
-      lineItems: {
-        include: { product: { select: { name: true, isActive: true } } },
-      },
-    },
-  })
-  if (!po) return { error: "Purchase order not found." }
-
   try {
-    assertPOEditable(po.status)
-  } catch (err) {
+    await prisma.$transaction(async (tx) => {
+      // Row lock MUST be the first statement, and every validation below
+      // must read data taken AFTER acquiring it. A plain (unlocked) read
+      // followed by a later write lets a concurrent updateDraftPurchaseOrder
+      // land in between — silently confirming a PO whose D-08 (line item
+      // count) / D-16 (active supplier/product) validation ran against
+      // line items that have since been replaced (Phase 04 UAT test 4).
+      const rows = await tx.$queryRaw<Array<{ status: string }>>`
+        SELECT "status" FROM purchase_orders WHERE id = ${id} FOR UPDATE
+      `
+      if (rows.length === 0) throw new Error("Purchase order not found.")
+
+      const status = rows[0].status
+      try {
+        assertPOEditable(status)
+      } catch (err) {
+        throw err instanceof Error
+          ? err
+          : new Error("This purchase order has already been received.")
+      }
+      if (status !== "DRAFT") {
+        throw new Error("Only Draft purchase orders can be confirmed.")
+      }
+
+      const po = await tx.purchaseOrder.findUniqueOrThrow({
+        where: { id },
+        include: {
+          supplier: { select: { name: true, isActive: true } },
+          lineItems: {
+            include: { product: { select: { name: true, isActive: true } } },
+          },
+        },
+      })
+
+      const parsed = confirmPurchaseOrderSchema.safeParse({
+        lineItems: po.lineItems.map((li) => ({
+          productId: li.productId,
+          quantity: li.quantity,
+          unitPrice: li.unitPrice.toNumber(),
+        })),
+      })
+      if (!parsed.success) {
+        throw new Error(
+          parsed.error.issues[0]?.message ??
+            "Invalid input. Please check all fields."
+        )
+      }
+
+      if (!po.supplier.isActive) {
+        throw new Error(
+          `Cannot confirm — ${po.supplier.name} has been deactivated. Update this purchase order before confirming.`
+        )
+      }
+      const inactiveLine = po.lineItems.find((li) => !li.product.isActive)
+      if (inactiveLine) {
+        throw new Error(
+          `Cannot confirm — ${inactiveLine.product.name} has been deactivated. Update this purchase order before confirming.`
+        )
+      }
+
+      // Defense-in-depth (CR-01 pattern): the row lock above already
+      // guarantees status is still DRAFT at this point, but the explicit
+      // status filter keeps this write consistent with updateDraftPurchaseOrder
+      // and deletePurchaseOrder's atomic-guard convention.
+      const { count } = await tx.purchaseOrder.updateMany({
+        where: { id, status: "DRAFT" },
+        data: { status: "ORDERED" },
+      })
+      if (count === 0) {
+        throw new Error("Only Draft purchase orders can be confirmed.")
+      }
+    })
+  } catch (err: unknown) {
     return {
       error:
         err instanceof Error
           ? err.message
-          : "This purchase order has already been received.",
+          : "Failed to confirm purchase order. Please try again.",
     }
-  }
-
-  if (po.status !== "DRAFT") {
-    return { error: "Only Draft purchase orders can be confirmed." }
-  }
-
-  const parsed = confirmPurchaseOrderSchema.safeParse({
-    lineItems: po.lineItems.map((li) => ({
-      productId: li.productId,
-      quantity: li.quantity,
-      unitPrice: li.unitPrice.toNumber(),
-    })),
-  })
-  if (!parsed.success) {
-    return {
-      error:
-        parsed.error.issues[0]?.message ??
-        "Invalid input. Please check all fields.",
-    }
-  }
-
-  if (!po.supplier.isActive) {
-    return {
-      error: `Cannot confirm — ${po.supplier.name} has been deactivated. Update this purchase order before confirming.`,
-    }
-  }
-  const inactiveLine = po.lineItems.find((li) => !li.product.isActive)
-  if (inactiveLine) {
-    return {
-      error: `Cannot confirm — ${inactiveLine.product.name} has been deactivated. Update this purchase order before confirming.`,
-    }
-  }
-
-  try {
-    await prisma.purchaseOrder.update({
-      where: { id },
-      data: { status: "ORDERED" },
-    })
-  } catch {
-    return { error: "Failed to confirm purchase order. Please try again." }
   }
 
   revalidatePath("/purchase-orders")
