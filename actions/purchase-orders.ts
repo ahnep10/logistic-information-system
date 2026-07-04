@@ -238,18 +238,32 @@ export async function receivePurchaseOrder(id: string, formData: FormData) {
         throw new Error("This purchase order has already been received.")
       }
 
-      const lineItemIds = parsed.data.lineItems.map((li) => li.lineItemId)
+      // Load the PO's FULL line-item set (not just the submitted ids) so we
+      // can require the payload to cover every line before marking the PO
+      // RECEIVED (WR-03), and so we can bound receivedQuantity against the
+      // originally ordered quantity (WR-04).
       const dbLineItems = await tx.purchaseOrderLineItem.findMany({
-        where: { id: { in: lineItemIds }, purchaseOrderId: id },
-        select: { id: true, productId: true },
+        where: { purchaseOrderId: id },
+        select: { id: true, productId: true, quantity: true },
       })
-      const productIdByLineItemId = new Map(
-        dbLineItems.map((li) => [li.id, li.productId])
-      )
+      const dbLineItemById = new Map(dbLineItems.map((li) => [li.id, li]))
+
+      if (parsed.data.lineItems.length !== dbLineItems.length) {
+        throw new Error(
+          "All line items must be included when receiving this purchase order."
+        )
+      }
 
       for (const line of parsed.data.lineItems) {
-        const productId = productIdByLineItemId.get(line.lineItemId)
-        if (!productId) throw new Error("Line item not found.")
+        const dbLineItem = dbLineItemById.get(line.lineItemId)
+        if (!dbLineItem) throw new Error("Line item not found.")
+        if (line.receivedQuantity > dbLineItem.quantity) {
+          throw new Error(
+            "Received quantity cannot exceed the ordered quantity."
+          )
+        }
+
+        const productId = dbLineItem.productId
 
         await tx.product.update({
           where: { id: productId },
