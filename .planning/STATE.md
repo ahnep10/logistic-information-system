@@ -120,6 +120,9 @@ None yet.
 - [Phase 03, non-blocking, tracked as T-03-11 in 03-SECURITY.md] `/inventory` page has no error handling for malformed `from`/`to` date URL params — `new Date("invalid")` + Prisma query is unguarded, a hand-crafted URL causes an unhandled 500 (03-REVIEW.md WR-02); worth a small follow-up fix
 - [Phase 04, non-blocking, pre-existing] `npm run build` fails the ESLint gate on 5 `@typescript-eslint/no-explicit-any` errors: 4 in `products-client.tsx` (Phase 02) and `stock-client.tsx` (Phase 03), plus 1 in `po-form-client.tsx` (04-03, established `zodResolver(...) as any` convention) — tests and `tsc --noEmit` pass; worth a small follow-up fix
 - [RESOLVED 2026-07-04] REQUIREMENTS.md prematurely marked PROC-02/PROC-03/PROC-04 Complete after 04-01 — corrected back to Pending (commit 03de22e); they complete for real once 04-04 lands confirm/receive/immutability
+- [Phase 04, non-blocking, from 04-REVIEW-FIX.md] `updateDraftPurchaseOrder`/`deletePurchaseOrder`'s TOCTOU-race fix (CR-01, commit a9cb914) uses `updateMany`/`deleteMany` with a `status` WHERE filter — logically sound and matches the established row-lock pattern, but not covered by a true concurrent-request integration test; worth a manual two-tab race test
+- [Phase 04, non-blocking, from 04-REVIEW-FIX.md] WR-03 (full line-item coverage) and WR-04 (receivedQuantity <= ordered quantity) guards in `receivePurchaseOrder` have no dedicated negative-path unit test — logic verified by code review only, worth adding the two missing test cases
+- [Phase 04, non-blocking, from 04-REVIEW-FIX.md] WR-06 fix (deactivated supplier/product still shown when editing a Draft PO, commit 141d4a3) has no automated test coverage (no tests target `page.tsx` Server Components in this project) — worth a manual check: deactivate a referenced supplier/product, open the Draft's edit page, confirm the name renders instead of a blank/raw id
 
 ## Deferred Items
 
