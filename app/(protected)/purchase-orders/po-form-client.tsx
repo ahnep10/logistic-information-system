@@ -47,6 +47,7 @@ import {
 interface Supplier {
   id: string
   name: string
+  isActive: boolean
 }
 
 interface Product {
@@ -160,6 +161,10 @@ export default function PurchaseOrderForm({
     return product ? `${product.name} (${product.sku})` : productId
   }
 
+  function supplierLabel(supplier: Supplier) {
+    return supplier.isActive ? supplier.name : `${supplier.name} (inactive)`
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -175,14 +180,21 @@ export default function PurchaseOrderForm({
                 <FormItem>
                   <FormLabel>Supplier</FormLabel>
                   <FormControl>
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                    <Select
+                      value={field.value ?? ""}
+                      onValueChange={field.onChange}
+                      items={suppliers.map((s) => ({
+                        value: s.id,
+                        label: supplierLabel(s),
+                      }))}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a supplier" />
                       </SelectTrigger>
                       <SelectContent>
                         {suppliers.map((s) => (
                           <SelectItem key={s.id} value={s.id}>
-                            {s.name}
+                            {supplierLabel(s)}
                           </SelectItem>
                         ))}
                       </SelectContent>

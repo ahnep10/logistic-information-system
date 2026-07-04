@@ -17,6 +17,7 @@
 import * as React from "react"
 import { renderToString } from "react-dom/server"
 import { hydrateRoot } from "react-dom/client"
+import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 
 vi.mock("@/actions/purchase-orders", () => ({
@@ -37,7 +38,7 @@ describe("PurchaseOrderForm — supplierId Select (Base UI controlled-value regr
       errors.push(args.map(String).join(" "))
     })
 
-    const suppliers = [{ id: "sup1", name: "Acme Co" }]
+    const suppliers = [{ id: "sup1", name: "Acme Co", isActive: true }]
     const products = [{ id: "prod1", name: "Widget", sku: "W-1" }]
 
     const element = (
@@ -60,5 +61,40 @@ describe("PurchaseOrderForm — supplierId Select (Base UI controlled-value regr
 
     const baseUiErrors = errors.filter((e) => e.includes("Base UI"))
     expect(baseUiErrors).toEqual([])
+  })
+})
+
+describe("PurchaseOrderForm — supplierId Select label display (WR-06 follow-up)", () => {
+  // Base UI's Select.Value renders the raw `value` (not the matching item's label)
+  // unless Select.Root is given an `items` prop -- the corresponding Select.Item only
+  // registers its label once the popup has actually been opened/mounted, which never
+  // happens on an initial closed render. This affects ANY pre-populated Select
+  // (edit mode), not just deactivated references -- verified for both cases here.
+  it("shows the active supplier's name, not its raw id, on initial render", () => {
+    render(
+      <PurchaseOrderForm
+        mode="edit"
+        purchaseOrder={{ id: "po_1", supplierId: "sup_active_1", lineItems: [] }}
+        suppliers={[{ id: "sup_active_1", name: "Active Co", isActive: true }]}
+        products={[]}
+      />
+    )
+
+    expect(screen.getByText("Active Co")).toBeTruthy()
+    expect(screen.queryByText("sup_active_1")).toBeNull()
+  })
+
+  it("shows the deactivated supplier's name with an (inactive) suffix, not its raw id", () => {
+    render(
+      <PurchaseOrderForm
+        mode="edit"
+        purchaseOrder={{ id: "po_1", supplierId: "sup_inactive_1", lineItems: [] }}
+        suppliers={[{ id: "sup_inactive_1", name: "Old Supplier Co", isActive: false }]}
+        products={[]}
+      />
+    )
+
+    expect(screen.getByText("Old Supplier Co (inactive)")).toBeTruthy()
+    expect(screen.queryByText("sup_inactive_1")).toBeNull()
   })
 })

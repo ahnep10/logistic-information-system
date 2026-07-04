@@ -41,6 +41,7 @@ import PurchaseOrderForm from "../po-form-client"
 interface Supplier {
   id: string
   name: string
+  isActive: boolean
 }
 
 interface Product {

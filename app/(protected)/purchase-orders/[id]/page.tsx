@@ -35,7 +35,7 @@ export default async function PurchaseOrderDetailPage({
     prisma.supplier.findMany({
       where: { OR: [{ isActive: true }, { id: po.supplierId }] },
       orderBy: { name: "asc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, isActive: true },
     }),
     prisma.product.findMany({
       where: {

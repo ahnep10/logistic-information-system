@@ -8,7 +8,7 @@ export default async function NewPurchaseOrderPage() {
     prisma.supplier.findMany({
       where: { isActive: true },
       orderBy: { name: "asc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, isActive: true },
     }),
     prisma.product.findMany({
       where: { isActive: true },
