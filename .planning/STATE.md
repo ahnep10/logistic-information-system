@@ -114,8 +114,8 @@ None yet.
 - Verify xlsx (SheetJS) current stable version on npm before Phase 6 installation
 - [Phase 03, non-blocking] `tests/warehouse.test.ts` has `it.todo` stubs for INVT-03's negative-stock/atomic-mutation logic — behavior is proven working (direct DB test in 03-VERIFICATION.md) but has zero automated regression protection (03-REVIEW.md WR-07)
 - [Phase 03, non-blocking, tracked as T-03-11 in 03-SECURITY.md] `/inventory` page has no error handling for malformed `from`/`to` date URL params — `new Date("invalid")` + Prisma query is unguarded, a hand-crafted URL causes an unhandled 500 (03-REVIEW.md WR-02); worth a small follow-up fix
-- [Phase 04, non-blocking, pre-existing] `npm run build` fails the ESLint gate on 4 `@typescript-eslint/no-explicit-any` errors in `products-client.tsx` (Phase 02) and `stock-client.tsx` (Phase 03) — unrelated to Phase 4 PO work, tests pass; worth a small follow-up fix
-- [Phase 04, non-blocking, pre-existing since 04-01] REQUIREMENTS.md marks PROC-02/PROC-03/PROC-04 Complete even though only PROC-01 (04-03) has actually shipped — 04-04 delivers confirm/receive/immutability. See .planning/phases/04-procurement/deferred-items.md
+- [Phase 04, non-blocking, pre-existing] `npm run build` fails the ESLint gate on 5 `@typescript-eslint/no-explicit-any` errors: 4 in `products-client.tsx` (Phase 02) and `stock-client.tsx` (Phase 03), plus 1 in `po-form-client.tsx` (04-03, established `zodResolver(...) as any` convention) — tests and `tsc --noEmit` pass; worth a small follow-up fix
+- [RESOLVED 2026-07-04] REQUIREMENTS.md prematurely marked PROC-02/PROC-03/PROC-04 Complete after 04-01 — corrected back to Pending (commit 03de22e); they complete for real once 04-04 lands confirm/receive/immutability
 
 ## Deferred Items
 
