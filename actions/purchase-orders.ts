@@ -40,9 +40,9 @@ export async function createDraftPurchaseOrder(formData: FormData) {
     return { error: "Invalid input. Please check all fields." }
   }
 
-  const totalAmount = computeTotalAmount(parsed.data.lineItems)
-
   try {
+    const totalAmount = computeTotalAmount(parsed.data.lineItems)
+
     const po = await prisma.purchaseOrder.create({
       data: {
         supplierId: parsed.data.supplierId,
@@ -70,14 +70,6 @@ export async function updateDraftPurchaseOrder(id: string, formData: FormData) {
   const session = await auth()
   if (!session?.user?.id) return { error: "Unauthorized" }
 
-  const existing = await prisma.purchaseOrder.findUnique({
-    where: { id },
-    select: { status: true },
-  })
-  if (!existing || existing.status !== "DRAFT") {
-    return { error: "Only Draft purchase orders can be edited." }
-  }
-
   const lineItems = parseLineItems(formData.get("lineItems"))
   const parsed = createPurchaseOrderSchema.safeParse({
     supplierId: formData.get("supplierId"),
@@ -87,33 +79,45 @@ export async function updateDraftPurchaseOrder(id: string, formData: FormData) {
     return { error: "Invalid input. Please check all fields." }
   }
 
-  const totalAmount = computeTotalAmount(parsed.data.lineItems)
-
   try {
+    const totalAmount = computeTotalAmount(parsed.data.lineItems)
+
     await prisma.$transaction(async (tx) => {
-      await tx.purchaseOrderLineItem.deleteMany({
-        where: { purchaseOrderId: id },
-      })
-      await tx.purchaseOrder.update({
-        where: { id },
+      // Re-check status inside the same transaction that performs the write —
+      // an earlier findUnique-then-mutate pattern is a TOCTOU race (CR-01).
+      const { count } = await tx.purchaseOrder.updateMany({
+        where: { id, status: "DRAFT" },
         data: {
           supplierId: parsed.data.supplierId,
           totalAmount,
-          lineItems: {
-            create: parsed.data.lineItems.map((li) => ({
-              productId: li.productId,
-              quantity: li.quantity,
-              unitPrice: new Prisma.Decimal(li.unitPrice),
-            })),
-          },
         },
       })
+      if (count === 0) {
+        throw new Error("Only Draft purchase orders can be edited.")
+      }
+
+      await tx.purchaseOrderLineItem.deleteMany({
+        where: { purchaseOrderId: id },
+      })
+      if (parsed.data.lineItems.length > 0) {
+        await tx.purchaseOrderLineItem.createMany({
+          data: parsed.data.lineItems.map((li) => ({
+            purchaseOrderId: id,
+            productId: li.productId,
+            quantity: li.quantity,
+            unitPrice: new Prisma.Decimal(li.unitPrice),
+          })),
+        })
+      }
     })
 
     revalidatePath("/purchase-orders")
     revalidatePath(`/purchase-orders/${id}`)
     return { success: true }
-  } catch {
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "Only Draft purchase orders can be edited.") {
+      return { error: err.message }
+    }
     return { error: "Failed to save purchase order. Please try again." }
   }
 }
@@ -193,16 +197,15 @@ export async function deletePurchaseOrder(id: string) {
   const session = await auth()
   if (!session?.user?.id) return { error: "Unauthorized" }
 
-  const existing = await prisma.purchaseOrder.findUnique({
-    where: { id },
-    select: { status: true },
-  })
-  if (!existing || existing.status !== "DRAFT") {
-    return { error: "Only Draft purchase orders can be deleted." }
-  }
-
   try {
-    await prisma.purchaseOrder.delete({ where: { id } })
+    // Guard the mutation itself, not an earlier read — deleteMany with a
+    // status filter is atomic, closing the TOCTOU race described in CR-01.
+    const { count } = await prisma.purchaseOrder.deleteMany({
+      where: { id, status: "DRAFT" },
+    })
+    if (count === 0) {
+      return { error: "Only Draft purchase orders can be deleted." }
+    }
   } catch {
     return { error: "Failed to delete purchase order. Please try again." }
   }
