@@ -135,20 +135,24 @@ export default function PurchaseOrderForm({
     fd.append("supplierId", values.supplierId)
     fd.append("lineItems", JSON.stringify(values.lineItems))
 
-    const result =
-      mode === "create"
-        ? await createDraftPurchaseOrder(fd)
-        : await updateDraftPurchaseOrder(purchaseOrder!.id, fd)
+    try {
+      const result =
+        mode === "create"
+          ? await createDraftPurchaseOrder(fd)
+          : await updateDraftPurchaseOrder(purchaseOrder!.id, fd)
 
-    if (result && "error" in result && result.error) {
-      setServerError(typeof result.error === "string" ? result.error : "An error occurred.")
-      return
-    }
+      if (result && "error" in result && result.error) {
+        setServerError(typeof result.error === "string" ? result.error : "An error occurred.")
+        return
+      }
 
-    if (mode === "create" && result && "id" in result && result.id) {
-      router.push(`/purchase-orders/${result.id}`)
+      if (mode === "create" && result && "id" in result && result.id) {
+        router.push(`/purchase-orders/${result.id}`)
+      }
+      // mode === "edit": rely on the caller's own re-render (04-04).
+    } catch {
+      setServerError("Failed to save purchase order. Please try again.")
     }
-    // mode === "edit": rely on the caller's own re-render (04-04).
   }
 
   function productLabel(productId: string) {
