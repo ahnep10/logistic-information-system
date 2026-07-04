@@ -36,10 +36,10 @@
 
 ### Procurement & Purchase Orders
 
-- [ ] **PROC-01**: Staff can create a purchase order in Draft status, selecting a supplier and adding line items (product + quantity + unit price)
-- [ ] **PROC-02**: Staff can edit a Draft PO and confirm it, advancing status to Ordered
-- [ ] **PROC-03**: Staff can receive goods against an Ordered PO, advancing status to Received; the goods receipt atomically creates a stock-in transaction and updates inventory in a single DB transaction
-- [ ] **PROC-04**: Received PO is immutable; no further status changes permitted after Received
+- [x] **PROC-01**: Staff can create a purchase order in Draft status, selecting a supplier and adding line items (product + quantity + unit price)
+- [x] **PROC-02**: Staff can edit a Draft PO and confirm it, advancing status to Ordered
+- [x] **PROC-03**: Staff can receive goods against an Ordered PO, advancing status to Received; the goods receipt atomically creates a stock-in transaction and updates inventory in a single DB transaction
+- [x] **PROC-04**: Received PO is immutable; no further status changes permitted after Received
 - [ ] **PROC-05**: User can view the full PO list with status filter (Draft / Ordered / Received) and PO detail with line items
 
 ### Management Dashboard
@@ -106,10 +106,10 @@
 | INVT-04 | Phase 3 | Complete |
 | INVT-05 | Phase 3 | Complete |
 | INVT-06 | Phase 3 | Complete |
-| PROC-01 | Phase 4 | Pending |
-| PROC-02 | Phase 4 | Pending |
-| PROC-03 | Phase 4 | Pending |
-| PROC-04 | Phase 4 | Pending |
+| PROC-01 | Phase 4 | Complete |
+| PROC-02 | Phase 4 | Complete |
+| PROC-03 | Phase 4 | Complete |
+| PROC-04 | Phase 4 | Complete |
 | PROC-05 | Phase 4 | Pending |
 | DASH-01 | Phase 5 | Pending |
 | DASH-02 | Phase 5 | Pending |
