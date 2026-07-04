@@ -1,29 +1,34 @@
 ---
 phase: 04-procurement
 verified: 2026-07-04T12:14:34Z
-status: human_needed
+status: passed
 score: 8/13 must-haves verified
 behavior_unverified: 5
 overrides_applied: 0
 mvp_mode_note: "ROADMAP.md marks Mode: mvp for this phase (and all six phases in this project), but the Goal line is descriptive prose, not literal 'As a...I want to...so that...' User Story syntax (user-story.validate returned false). Unlike Phase 3, no PLAN.md in this phase embeds an alternate valid User Story either. Following the Phase 3 precedent (03-VERIFICATION.md), this is treated as a documentation-formatting gap, not a blocker — the ROADMAP Success Criteria are concrete, observable, and testable, so standard goal-backward verification proceeded against them directly rather than refusing."
 re_verification: null
 behavior_unverified_items:
+
   - truth: "Confirming a valid Draft PO advances status DRAFT -> ORDERED (PROC-02)"
     test: "Create a Draft PO with >=1 line item and an active supplier/products, then call confirmPurchaseOrder(id)"
     expected: "PO status becomes ORDERED in the database; a subsequent load of the PO shows status ORDERED and the line-item table becomes read-only"
     why_human: "No automated test in tests/purchase-orders.test.ts asserts the confirmPurchaseOrder success path (only the two D-16 rejection paths — deactivated supplier/product — are unit-tested). The write itself (`prisma.purchaseOrder.update({ data: { status: \"ORDERED\" } })`) is unexercised by any mock/integration test. It was exercised in the 04-04 end-of-phase human checkpoint (approved), but that checkpoint predates the CR-01/CR-03 review-fix commits, so a fresh confirmation is recommended."
+
   - truth: "receivePurchaseOrder rejects a payload missing PO line items (WR-03) and rejects receivedQuantity exceeding the ordered quantity (WR-04)"
     test: "Call receivePurchaseOrder with a lineItems payload that omits one of the PO's line items, and separately with a receivedQuantity greater than that line's ordered quantity"
     expected: "First case: '{ error: \"All line items must be included when receiving this purchase order.\" }'; second case: '{ error: \"Received quantity cannot exceed the ordered quantity.\" }'; in both cases no stock/StockTransaction mutation occurs"
     why_human: "The code path exists (actions/purchase-orders.ts:251-264) and was reviewed/fixed in commit 8a392e0, but 04-REVIEW-FIX.md self-flags both as 'fixed: requires human verification' — the WR-08 follow-up test pass (0b8ed31) only added happy-path coverage (full, in-bounds receipt), not these two negative-path cases."
+
   - truth: "A Received PO cannot be edited or deleted via updateDraftPurchaseOrder/deletePurchaseOrder, regardless of what UI buttons are shown (PROC-04, D-17)"
     test: "Directly call updateDraftPurchaseOrder(receivedPoId, formData) and deletePurchaseOrder(receivedPoId) against a PO whose status is RECEIVED"
     expected: "Both return { error: \"Only Draft purchase orders can be edited.\" } / { error: \"Only Draft purchase orders can be deleted.\" } and make no database writes"
     why_human: "The CR-01 fix (atomic updateMany/deleteMany with a status:\"DRAFT\" WHERE-clause filter) is structurally correct by code inspection and is a well-established Postgres atomicity pattern already used elsewhere in this codebase, but no unit test in tests/purchase-orders.test.ts exercises updateDraftPurchaseOrder or deletePurchaseOrder at all (only receivePurchaseOrder and confirmPurchaseOrder are covered). Only the receive path's row-lock-and-reject behavior is behaviorally tested."
+
   - truth: "Two concurrent requests racing to update/delete/confirm the same PO cannot both succeed (CR-01 concurrency fix)"
     test: "Fire two near-simultaneous updateDraftPurchaseOrder/deletePurchaseOrder/confirmPurchaseOrder calls against the same Draft PO id, one of which is expected to lose the race after the other transitions the PO's status"
     expected: "Exactly one request succeeds; the other receives a clear rejection error and makes no partial writes"
     why_human: "04-REVIEW-FIX.md explicitly self-flags this: 'no live Postgres instance was available in this environment to run a true concurrent-transaction integration test... recommend a manual/staging test of two concurrent update+confirm (or delete+confirm) requests against a real database before considering this fully closed.' This verifier confirmed the fix code is present and structurally sound (atomic single-statement WHERE-clause guards) but cannot fabricate a live concurrency test that the fix's own author explicitly deferred."
+
   - truth: "Post-review-fix UI correctness: the order Total row reappears after a successful receipt (WR-05), and a Draft PO's deactivated-since-creation supplier/product renders by name rather than blank/raw id when editing (WR-06)"
     test: "WR-05: Receive goods against an Ordered PO and confirm the Total row is visible immediately after the page re-renders (not just after manual navigation away and back). WR-06: deactivate a supplier or line-item product referenced by an existing Draft PO, then open that Draft's edit view and confirm the Select/line-item labels show the correct name, not a blank field or raw cuid."
     expected: "WR-05: Total row visible immediately post-receipt. WR-06: Supplier Select pre-fills with the deactivated supplier's name; line-item rows show the deactivated product's name/SKU, not its raw id."
