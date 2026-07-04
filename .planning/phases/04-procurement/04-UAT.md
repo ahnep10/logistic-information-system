@@ -3,27 +3,30 @@ status: testing
 phase: 04-procurement
 source: [04-VERIFICATION.md]
 started: 2026-07-04T12:20:00Z
-updated: 2026-07-04T12:20:00Z
+updated: 2026-07-04T12:35:00Z
 ---
 
 ## Current Test
 
-number: 1
-name: Confirm Order — DRAFT to ORDERED status write
+number: 3
+name: Received-PO immutability via direct Server Action calls (bypassing UI)
 expected: |
-  PO status becomes "Ordered"; reloading the detail page shows the Ordered badge and a
-  read-only line-item table (no edit/remove controls).
+  Directly calling updateDraftPurchaseOrder(receivedPoId, formData) and
+  deletePurchaseOrder(receivedPoId) against a PO whose status is already RECEIVED both
+  return their respective "Only Draft purchase orders can be..." error and make no
+  database writes.
 awaiting: user response
 
 ## Tests
 
 ### 1. Confirm Order — DRAFT to ORDERED status write
 expected: Create (or reuse) a Draft PO with ≥1 line item and an active supplier/products, then click "Confirm Order". PO status becomes "Ordered"; reloading the detail page shows the Ordered badge and a read-only line-item table (no edit/remove controls).
-result: [pending]
+result: pass
 
 ### 2. Receive Goods — reject incomplete payload and over-received quantity
 expected: (a) Attempting to receive with a payload missing one of the PO's line items returns "All line items must be included when receiving this purchase order." with no stock/StockTransaction mutation. (b) Attempting to receive with a receivedQuantity greater than the ordered quantity returns "Received quantity cannot exceed the ordered quantity." with no mutation. (Note: current UI always sends all lines pre-filled at ordered quantity — this may require a direct Server Action call or devtools-forged request to exercise.)
-result: [pending]
+result: pass
+note: Not covered by prior test suite (only schema-level 0/negative receivedQuantity checks existed) — added two real Server-Action-level tests in tests/purchase-orders.test.ts (WR-03 missing-line-item rejection, WR-04 over-receipt rejection) mocking the tx layer per the file's existing pattern. `npx vitest run tests/purchase-orders.test.ts` — 20/20 passed.
 
 ### 3. Received-PO immutability via direct Server Action calls (bypassing UI)
 expected: Directly calling updateDraftPurchaseOrder(receivedPoId, formData) and deletePurchaseOrder(receivedPoId) against a PO whose status is already RECEIVED both return their respective "Only Draft purchase orders can be..." error and make no database writes.
@@ -40,9 +43,9 @@ result: [pending]
 ## Summary
 
 total: 5
-passed: 0
+passed: 2
 issues: 0
-pending: 5
+pending: 3
 skipped: 0
 blocked: 0
 

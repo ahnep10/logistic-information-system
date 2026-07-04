@@ -296,6 +296,57 @@ describe("Receive Purchase Order Server Action — actions/purchase-orders.ts (W
       data: { status: "RECEIVED" },
     })
   })
+
+  // WR-03 | mock prisma.$transaction; submit a payload missing one of the PO's line items
+  // Assert: receivePurchaseOrder rejects with the exact WR-03 error and makes no stock/StockTransaction mutation
+  it("receivePurchaseOrder rejects a payload missing one of the PO's line items (WR-03)", async () => {
+    const dbLineItems = [
+      { id: "li_1", productId: "prod_1", quantity: 5 },
+      { id: "li_2", productId: "prod_2", quantity: 3 },
+    ]
+    const tx = makeTx("ORDERED", dbLineItems)
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
+
+    const fd = new FormData()
+    fd.append(
+      "lineItems",
+      JSON.stringify([{ lineItemId: "li_1", receivedQuantity: 5 }])
+    )
+    const result = await receivePurchaseOrder("po_1", fd)
+
+    expect(result).toEqual({
+      error: "All line items must be included when receiving this purchase order.",
+    })
+    expect(tx.product.update).not.toHaveBeenCalled()
+    expect(tx.stockTransaction.create).not.toHaveBeenCalled()
+    expect(tx.purchaseOrder.update).not.toHaveBeenCalled()
+  })
+
+  // WR-04 | mock prisma.$transaction; submit a receivedQuantity greater than the ordered quantity
+  // Assert: receivePurchaseOrder rejects with the exact WR-04 error and makes no stock/StockTransaction mutation
+  it("receivePurchaseOrder rejects a receivedQuantity greater than the ordered quantity (WR-04)", async () => {
+    const dbLineItems = [{ id: "li_1", productId: "prod_1", quantity: 5 }]
+    const tx = makeTx("ORDERED", dbLineItems)
+    vi.mocked(prisma.$transaction).mockImplementation(
+      (callback: (tx: any) => Promise<unknown>) => callback(tx)
+    )
+
+    const fd = new FormData()
+    fd.append(
+      "lineItems",
+      JSON.stringify([{ lineItemId: "li_1", receivedQuantity: 6 }])
+    )
+    const result = await receivePurchaseOrder("po_1", fd)
+
+    expect(result).toEqual({
+      error: "Received quantity cannot exceed the ordered quantity.",
+    })
+    expect(tx.product.update).not.toHaveBeenCalled()
+    expect(tx.stockTransaction.create).not.toHaveBeenCalled()
+    expect(tx.purchaseOrder.update).not.toHaveBeenCalled()
+  })
 })
 
 describe("assertPOEditable immutability guard — lib/validations/purchase-order.ts", () => {
