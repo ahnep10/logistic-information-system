@@ -160,7 +160,16 @@ Plans:
   2. Clicking the low-stock count tile navigates to the inventory list pre-filtered to show only low-stock products.
   3. Dashboard shows a PO status summary panel with the count of POs in each status (Draft, Ordered, Received).
 
-**Plans**: TBD
+**Plans**: 0/3 plans complete
+
+Plans:
+
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — Dashboard KPI tiles + Recharts PO status pie chart (recharts install, lib/utils/dashboard.ts, dashboard/page.tsx, dashboard-client.tsx) (DASH-01, DASH-02, DASH-03)
+- [ ] 05-02-PLAN.md — /products?stock=low server-side filter + banner (DASH-02)
+- [ ] 05-03-PLAN.md — /purchase-orders?status=X searchParams drill-down (DASH-03)
+
 **UI hint**: yes
 
 ### Phase 6: Reports
@@ -190,5 +199,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Catalog | 5/5 | Complete    | 2026-06-30 |
 | 3. Warehouse | 3/3 | Complete    | 2026-07-02 |
 | 4. Procurement | 4/4 | Complete    | 2026-07-04 |
-| 5. Dashboard | 0/TBD | Not started | - |
+| 5. Dashboard | 0/3 | Not started | - |
 | 6. Reports | 0/TBD | Not started | - |
