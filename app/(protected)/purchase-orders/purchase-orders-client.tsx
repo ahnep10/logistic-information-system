@@ -30,11 +30,12 @@ interface PurchaseOrder {
   createdBy: { name: string }
 }
 
+type FilterTab = "all" | "draft" | "ordered" | "received"
+
 interface PurchaseOrdersClientProps {
   purchaseOrders: PurchaseOrder[]
+  initialFilter?: FilterTab
 }
-
-type FilterTab = "all" | "draft" | "ordered" | "received"
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -42,8 +43,8 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
   minimumFractionDigits: 0,
 })
 
-export default function PurchaseOrdersClient({ purchaseOrders }: PurchaseOrdersClientProps) {
-  const [filter, setFilter] = useState<FilterTab>("all")
+export default function PurchaseOrdersClient({ purchaseOrders, initialFilter }: PurchaseOrdersClientProps) {
+  const [filter, setFilter] = useState<FilterTab>(initialFilter ?? "all")
 
   const visiblePurchaseOrders = purchaseOrders.filter((po) => {
     if (filter === "all") return true
