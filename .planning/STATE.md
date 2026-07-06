@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 5
-current_phase_name: Dashboard
+current_phase: 05
+current_phase_name: dashboard
 status: executing
 stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-07-06T09:59:07.384Z"
-last_activity: 2026-07-04
-last_activity_desc: Phase 04 complete, transitioned to Phase 5
+last_updated: "2026-07-06T12:34:25.638Z"
+last_activity: 2026-07-06
+last_activity_desc: Phase 05 execution started
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 21
+  completed_plans: 19
   percent: 67
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-02)
 
 **Core value:** Give managers a single real-time source of truth for inventory and procurement so they can make faster, data-driven decisions, reduce stock shortages, and improve operational efficiency.
-**Current focus:** Phase 05 — Dashboard
+**Current focus:** Phase 05 — dashboard
 
 ## Current Position
 
-Phase: 5 — Dashboard
-Plan: Not started
+Phase: 05 (dashboard) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-07-04 — Phase 04 complete, transitioned to Phase 5
+Last activity: 2026-07-06 — Phase 05 execution started
 
 Progress: [██████░░░░] 67% (4/6 phases)
 
@@ -72,6 +72,7 @@ Progress: [██████░░░░] 67% (4/6 phases)
 | Phase 04 P02 | 20min | 2 tasks | 2 files |
 | Phase 04-procurement P03 | 18min | 2 tasks | 3 files |
 | Phase 04 P04 | 25min | 2 tasks | 3 files |
+| Phase 05 P01 | 21min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ Recent decisions affecting current work:
 - [Phase ?]: [04-04]: Phase 4 (Procurement) fully complete — PROC-02/03/04/05 delivered via row-locked atomic goods-receipt transaction and three-state PO detail page, end-to-end lifecycle checkpoint approved
 - [04-UAT]: confirmPurchaseOrder rewritten to move its read + D-08/D-16 validation + write inside one row-locked transaction (SELECT ... FOR UPDATE) — a plain status-filtered updateMany alone (the CR-01 pattern) does not close the update-vs-confirm race, since updateDraftPurchaseOrder never touches `status`; discovered via a real-Postgres concurrency test, not review
 - [04-UAT]: Base UI's Select.Value shows the raw `value` (not the item's label) for ANY pre-populated Select unless Select.Root is given an `items` prop — not specific to deactivated references; affects every edit-mode Select in the app that pre-populates a real value without passing `items` (only po-form-client.tsx's supplierId Select was fixed this session — worth auditing other Selects, e.g. products-client.tsx's categoryId edit Select, for the same latent bug)
+- [Phase ?]: [05-01]: prisma.product.fields.reorderThreshold FieldRef used for low-stock cross-column comparison (currentStock <= reorderThreshold), superseding CONTEXT.md D-02's raw-SQL default per RESEARCH.md
+- [Phase ?]: [05-01]: npm install recharts@3.9.2 required --fetch-retries flags due to transient ECONNRESET registry errors, not a package-legitimacy issue
 
 ### Pending Todos
 
@@ -141,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-06T09:04:42.192Z
+Last session: 2026-07-06T12:33:38.943Z
 Stopped at: Phase 5 UI-SPEC approved
 Resume file: .planning/phases/05-dashboard/05-UI-SPEC.md

@@ -44,9 +44,9 @@
 
 ### Management Dashboard
 
-- [ ] **DASH-01**: Manager sees a dashboard with real-time KPIs: total active products, total active suppliers, stock movements recorded today, and count of low-stock items
-- [ ] **DASH-02**: Low-stock item count on dashboard is clickable and drills into the filtered inventory list showing only low-stock products
-- [ ] **DASH-03**: Dashboard shows a PO status summary (count of POs in each status: Draft, Ordered, Received)
+- [x] **DASH-01**: Manager sees a dashboard with real-time KPIs: total active products, total active suppliers, stock movements recorded today, and count of low-stock items
+- [x] **DASH-02**: Low-stock item count on dashboard is clickable and drills into the filtered inventory list showing only low-stock products
+- [x] **DASH-03**: Dashboard shows a PO status summary (count of POs in each status: Draft, Ordered, Received)
 
 ### Reports
 
@@ -111,9 +111,9 @@
 | PROC-03 | Phase 4 | Complete |
 | PROC-04 | Phase 4 | Complete |
 | PROC-05 | Phase 4 | Complete |
-| DASH-01 | Phase 5 | Pending |
-| DASH-02 | Phase 5 | Pending |
-| DASH-03 | Phase 5 | Pending |
+| DASH-01 | Phase 5 | Complete |
+| DASH-02 | Phase 5 | Complete |
+| DASH-03 | Phase 5 | Complete |
 | REPT-01 | Phase 6 | Pending |
 | REPT-02 | Phase 6 | Pending |
 | REPT-03 | Phase 6 | Pending |
