@@ -6,14 +6,14 @@ current_phase: 05
 current_phase_name: dashboard
 status: executing
 stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-07-06T12:34:25.638Z"
+last_updated: "2026-07-06T12:42:46.815Z"
 last_activity: 2026-07-06
 last_activity_desc: Phase 05 execution started
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 21
-  completed_plans: 19
+  completed_plans: 20
   percent: 67
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-02)
 ## Current Position
 
 Phase: 05 (dashboard) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-06 — Phase 05 execution started
 
@@ -73,6 +73,7 @@ Progress: [██████░░░░] 67% (4/6 phases)
 | Phase 04-procurement P03 | 18min | 2 tasks | 3 files |
 | Phase 04 P04 | 25min | 2 tasks | 3 files |
 | Phase 05 P01 | 21min | 2 tasks | 6 files |
+| Phase 05 P02 | 12min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,8 @@ Recent decisions affecting current work:
 - [04-UAT]: Base UI's Select.Value shows the raw `value` (not the item's label) for ANY pre-populated Select unless Select.Root is given an `items` prop — not specific to deactivated references; affects every edit-mode Select in the app that pre-populates a real value without passing `items` (only po-form-client.tsx's supplierId Select was fixed this session — worth auditing other Selects, e.g. products-client.tsx's categoryId edit Select, for the same latent bug)
 - [Phase ?]: [05-01]: prisma.product.fields.reorderThreshold FieldRef used for low-stock cross-column comparison (currentStock <= reorderThreshold), superseding CONTEXT.md D-02's raw-SQL default per RESEARCH.md
 - [Phase ?]: [05-01]: npm install recharts@3.9.2 required --fetch-retries flags due to transient ECONNRESET registry errors, not a package-legitimacy issue
+- [Phase ?]: Reused prisma.product.fields.reorderThreshold FieldRef (established in 05-01) rather than raw SQL or fetch-then-filter, keeping the low-stock definition consistent across dashboard KPI and this filtered list
+- [Phase ?]: lowStockCount computed as products.length (post-filter findMany result length) rather than a separate count() query, since the filtered findMany result IS the low-stock set when isLowStockFiltered is true
 
 ### Pending Todos
 
@@ -144,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-06T12:33:38.943Z
+Last session: 2026-07-06T12:41:22.679Z
 Stopped at: Phase 5 UI-SPEC approved
 Resume file: .planning/phases/05-dashboard/05-UI-SPEC.md
