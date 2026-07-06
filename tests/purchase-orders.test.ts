@@ -31,6 +31,7 @@ vi.mock("@/lib/prisma", () => ({
     $transaction: vi.fn(),
     purchaseOrder: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
       update: vi.fn(),
       deleteMany: vi.fn(),
     },
@@ -49,6 +50,7 @@ const {
   updateDraftPurchaseOrder,
   deletePurchaseOrder,
 } = await import("@/actions/purchase-orders")
+const PurchaseOrdersPage = (await import("@/app/(protected)/purchase-orders/page")).default
 
 describe("Draft Purchase Order Validation — lib/validations/purchase-order.ts", () => {
   // D-08 | Draft POs may be saved with 0 line items
@@ -479,6 +481,73 @@ describe("Confirm Purchase Order Server Action — actions/purchase-orders.ts (W
     const result = await confirmPurchaseOrder("po_1")
 
     expect(result).toEqual({ error: "Only Draft purchase orders can be confirmed." })
+  })
+})
+
+describe("Purchase Orders Page — status searchParams filter (DASH-03)", () => {
+  beforeEach(() => {
+    vi.mocked(prisma.purchaseOrder.findMany).mockResolvedValue([])
+  })
+
+  // DASH-03 | valid uppercase DRAFT resolves to lowercased initialFilter prop
+  it("resolves initialFilter to 'draft' when searchParams.status is 'DRAFT'", async () => {
+    const element = await PurchaseOrdersPage({
+      searchParams: Promise.resolve({ status: "DRAFT" }),
+    } as never)
+
+    expect(element.props.initialFilter).toBe("draft")
+  })
+
+  // DASH-03 | valid uppercase ORDERED resolves to lowercased initialFilter prop
+  it("resolves initialFilter to 'ordered' when searchParams.status is 'ORDERED'", async () => {
+    const element = await PurchaseOrdersPage({
+      searchParams: Promise.resolve({ status: "ORDERED" }),
+    } as never)
+
+    expect(element.props.initialFilter).toBe("ordered")
+  })
+
+  // DASH-03 | valid uppercase RECEIVED resolves to lowercased initialFilter prop
+  it("resolves initialFilter to 'received' when searchParams.status is 'RECEIVED'", async () => {
+    const element = await PurchaseOrdersPage({
+      searchParams: Promise.resolve({ status: "RECEIVED" }),
+    } as never)
+
+    expect(element.props.initialFilter).toBe("received")
+  })
+
+  // DASH-03 | case-sensitive match — lowercase input is NOT accepted (RESEARCH.md Pitfall 2)
+  it("resolves initialFilter to undefined when searchParams.status is lowercase 'draft'", async () => {
+    const element = await PurchaseOrdersPage({
+      searchParams: Promise.resolve({ status: "draft" }),
+    } as never)
+
+    expect(element.props.initialFilter).toBeUndefined()
+  })
+
+  // DASH-03 | garbage value or absent param both degrade silently, never throw
+  it("resolves initialFilter to undefined for garbage status or absent status, never throwing", async () => {
+    const garbageElement = await PurchaseOrdersPage({
+      searchParams: Promise.resolve({ status: "GARBAGE" }),
+    } as never)
+    expect(garbageElement.props.initialFilter).toBeUndefined()
+
+    const absentElement = await PurchaseOrdersPage({
+      searchParams: Promise.resolve({}),
+    } as never)
+    expect(absentElement.props.initialFilter).toBeUndefined()
+  })
+
+  // DASH-03 | the underlying Prisma fetch query itself is unfiltered regardless of ?status=
+  it("does not alter prisma.purchaseOrder.findMany's call arguments based on searchParams.status", async () => {
+    await PurchaseOrdersPage({ searchParams: Promise.resolve({ status: "DRAFT" }) } as never)
+    const callArgsWithStatus = vi.mocked(prisma.purchaseOrder.findMany).mock.calls[0]
+
+    vi.mocked(prisma.purchaseOrder.findMany).mockClear()
+    await PurchaseOrdersPage({ searchParams: Promise.resolve({}) } as never)
+    const callArgsWithoutStatus = vi.mocked(prisma.purchaseOrder.findMany).mock.calls[0]
+
+    expect(callArgsWithStatus).toEqual(callArgsWithoutStatus)
   })
 })
 
