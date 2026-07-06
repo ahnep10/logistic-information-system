@@ -1,9 +1,9 @@
 ---
 phase: 5
 slug: dashboard
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: final
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-07-06
 ---
 
@@ -38,16 +38,16 @@ created: 2026-07-06
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 05-XX | TBD | TBD | DASH-01 | — | UTC day-boundary calculation produces correct `gte`/`lte` Date objects for "today" | unit | `npx vitest run tests/dashboard.test.ts -t "UTC day boundary"` | ❌ W0 | ⬜ pending |
-| 05-XX | TBD | TBD | DASH-01 | — | KPI count queries use correct Prisma filter shape (`isActive: true`, etc.) | unit | `npx vitest run tests/dashboard.test.ts -t "KPI queries"` | ❌ W0 | ⬜ pending |
-| 05-XX | TBD | TBD | DASH-02 | T-05-01 | Low-stock FieldRef filter (`currentStock: {lte: fields.reorderThreshold}`) applied identically in count query and `?stock=low` list query | unit (mocked prisma) | `npx vitest run tests/dashboard.test.ts -t "low-stock filter"` | ❌ W0 | ⬜ pending |
-| 05-XX | TBD | TBD | DASH-02 | T-05-01 | `/products?stock=low` searchParams parsing: `"low"` → filter applied; any other value or absent → unfiltered (whitelist-validate, no throw) | unit | `npx vitest run tests/products.test.ts -t "stock param"` | ❌ W0 (new/extend `catalog.test.ts`) | ⬜ pending |
-| 05-XX | TBD | TBD | DASH-03 | — | `PurchaseOrder.groupBy` result default-fills zero-count statuses (DRAFT/ORDERED/RECEIVED all present even if some are 0) | unit | `npx vitest run tests/dashboard.test.ts -t "groupBy zero-fill"` | ❌ W0 | ⬜ pending |
-| 05-XX | TBD | TBD | DASH-03 | T-05-01 | `/purchase-orders?status=X` searchParams validated against `POStatus` enum; invalid values fall back to `"all"` (whitelist-validate, no throw) | unit | `npx vitest run tests/purchase-orders.test.ts -t "status param"` | ❌ W0 (extend existing) | ⬜ pending |
-| 05-XX | TBD | TBD | DASH-02/03 | — | Manual UAT: clicking low-stock tile navigates to `/products?stock=low` with correct banner; clicking a pie slice navigates to `/purchase-orders?status={STATUS}` and pre-selects the matching Tab | manual (browser) | — | N/A | ⬜ pending |
+| 05-01-Task0 | 05-01 | 1 | — (process gate) | — | Human-verify checkpoint: confirm `recharts` npm package legitimacy before install (SUS false-positive per RESEARCH.md) | manual (checkpoint) | — (blocking-human gate) | N/A | ⬜ pending |
+| 05-01-Task1 | 05-01 | 1 | DASH-01, DASH-03 | — | UTC day-boundary calc + `groupBy` zero-fill logic extracted into `lib/utils/dashboard.ts`, unit-tested in isolation | unit | `npx vitest run tests/dashboard.test.ts` | ❌ W0 → created this task | ⬜ pending |
+| 05-01-Task2 | 05-01 | 1 | DASH-01, DASH-02, DASH-03 | T-05-01/T-05-02 | Dashboard page (5 Prisma queries incl. FieldRef low-stock count) + Recharts client component with defensive `onClick` payload read (`data?.payload?.status ?? data?.status`) | unit + manual | `npx vitest run tests/dashboard.test.ts` + human-check (KPI tiles render, pie chart/empty-state, slice click navigates without console error) | ❌ W0 → created this task | ⬜ pending |
+| 05-02-Task1 | 05-02 | 1 | DASH-02 | T-05-03 | `/products?stock=low` server-side filtering via FieldRef comparison; whitelist-validate `?stock=` (only `"low"` triggers filter, any other value/absent → unfiltered, no throw) | unit | `npx vitest run tests/products.test.ts` | ❌ W0 → created this task | ⬜ pending |
+| 05-02-Task2 | 05-02 | 1 | DASH-02 | — | Low-stock banner ("Showing N low-stock products") + filtered-empty state on `products-client.tsx` | type-check + manual | `npx tsc --noEmit` + human-check (banner text matches row count, "View all products" clears filter, `?stock=bogus` renders unfiltered with no error) | N/A (UI-only) | ⬜ pending |
+| 05-03-Task1 | 05-03 | 1 | DASH-03 | T-05-04 | `/purchase-orders?status=X` searchParams validated against `POStatus` enum; invalid values fall back to `"all"` (whitelist-validate, no throw) | unit | `npx vitest run tests/purchase-orders.test.ts` | ❌ W0 → extended existing | ⬜ pending |
+| 05-03-Task2 | 05-03 | 1 | DASH-03 | — | `FilterTab` seeded from `initialFilter` prop so `?status=ORDERED` pre-selects the matching Tab on load | unit + manual | `npx vitest run tests/purchase-orders.test.ts` + human-check (`?status=ORDERED` pre-selects Tab; `?status=bogus` behaves identically to no param) | ❌ W0 → extended existing | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
-*Task IDs and plan/wave assignments are TBD — the planner fills these in when PLAN.md files are created.*
+*Task IDs reflect each plan's internal task numbering (`Task 0/1/2`) prefixed with the plan ID — updated post-planning per plan-checker review (05-VERIFICATION.md pass, warnings addressed).*
 
 ---
 

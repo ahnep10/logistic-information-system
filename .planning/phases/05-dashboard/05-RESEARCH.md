@@ -399,12 +399,12 @@ Not applicable — this is a greenfield feature phase (new dashboard page + addi
 
 **If this table is empty:** N/A — see above; both entries are low-risk implementation-detail assumptions about the newly-installed Recharts library's exact event API, not architectural or business-logic assumptions. The core technical unknowns (Prisma FieldRef availability, Recharts/React 19 compatibility, Server/Client split necessity) were all directly verified against this project's installed code or the npm registry this session.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact Recharts `onClick` event payload shape in v3.9.2**
+1. **Exact Recharts `onClick` event payload shape in v3.9.2** — RESOLVED at planning time
    - What we know: Recharts click handlers receive the data entry (and typically an index/event) — confirmed via general Recharts API knowledge and WebSearch, not a full official-docs fetch (WebFetch attempts against `recharts.org`'s docs pages did not return usable content this session).
    - What's unclear: Whether to read `entry.status` directly or `entry.payload.status` in Recharts 3.x specifically (API shape has shifted across major versions).
-   - Recommendation: During implementation, `console.log` the `onClick` argument once locally before wiring the `router.push()` call — a 30-second manual check that resolves this immediately, cheaper than further research.
+   - Resolution: 05-01-PLAN.md Task 2 wires the click handler defensively — `data?.payload?.status ?? data?.status` — so either payload shape resolves correctly at runtime without further research (confirmed by gsd-plan-checker, 05-VERIFICATION.md).
 
 ## Environment Availability
 
