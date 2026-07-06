@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Pencil, EyeOff, Eye, Loader2, Package } from "lucide-react"
+import { Pencil, EyeOff, Eye, Loader2, Package, AlertTriangle } from "lucide-react"
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -87,12 +88,16 @@ interface ProductsClientProps {
   products: Product[]
   categories: Category[]
   isManager: boolean
+  isLowStockFiltered: boolean
+  lowStockCount: number
 }
 
 export default function ProductsClient({
   products,
   categories,
   isManager,
+  isLowStockFiltered,
+  lowStockCount,
 }: ProductsClientProps) {
   return (
     <div>
@@ -100,6 +105,26 @@ export default function ProductsClient({
         <h1 className="text-2xl font-semibold">Products</h1>
         {isManager && <CreateProductDialog categories={categories} />}
       </div>
+
+      {isLowStockFiltered && (
+        <div className="flex items-center justify-between p-4 mb-4 rounded-md border border-amber-200 bg-amber-50">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <p className="text-sm text-amber-800">
+              Showing {lowStockCount} low-stock product
+              {lowStockCount === 1 ? "" : "s"}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/products" />}
+          >
+            View all products
+          </Button>
+        </div>
+      )}
 
       <Card>
         <Table>
@@ -125,12 +150,26 @@ export default function ProductsClient({
                 <TableCell colSpan={isManager ? 8 : 7}>
                   <div className="flex flex-col items-center py-12 text-center">
                     <Package className="w-8 h-8 text-zinc-300 mb-3" />
-                    <p className="text-sm font-medium text-zinc-900">
-                      No products yet
-                    </p>
-                    <p className="text-sm text-zinc-500 mt-1">
-                      Create a product to start tracking inventory.
-                    </p>
+                    {isLowStockFiltered ? (
+                      <>
+                        <p className="text-sm font-medium text-zinc-900">
+                          No low-stock products
+                        </p>
+                        <p className="text-sm text-zinc-500 mt-1">
+                          All active products are currently above their
+                          reorder threshold.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-zinc-900">
+                          No products yet
+                        </p>
+                        <p className="text-sm text-zinc-500 mt-1">
+                          Create a product to start tracking inventory.
+                        </p>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
