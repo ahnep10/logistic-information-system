@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Catalog** - Product and supplier master data — foundational reference tables for all transactions (completed 2026-06-30)
 - [x] **Phase 3: Warehouse** - Stock transaction recording, inventory tracking, and low-stock alerts (completed 2026-07-02)
 - [x] **Phase 4: Procurement** - Purchase order lifecycle from Draft through atomic goods receipt (completed 2026-07-04)
-- [ ] **Phase 5: Dashboard** - Real-time KPI summary and operational health view for managers
+- [x] **Phase 5: Dashboard** - Real-time KPI summary and operational health view for managers (completed 2026-07-06)
 - [ ] **Phase 6: Reports** - Inventory, movement, and PO reports with Excel export
 
 ## Phase Details
@@ -160,7 +160,7 @@ Plans:
   2. Clicking the low-stock count tile navigates to the inventory list pre-filtered to show only low-stock products.
   3. Dashboard shows a PO status summary panel with the count of POs in each status (Draft, Ordered, Received).
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans complete
 
 Plans:
 
@@ -168,7 +168,7 @@ Plans:
 
 - [x] 05-01-PLAN.md — Dashboard KPI tiles + Recharts PO status pie chart (recharts install, lib/utils/dashboard.ts, dashboard/page.tsx, dashboard-client.tsx) (DASH-01, DASH-02, DASH-03)
 - [x] 05-02-PLAN.md — /products?stock=low server-side filter + banner (DASH-02)
-- [ ] 05-03-PLAN.md — /purchase-orders?status=X searchParams drill-down (DASH-03)
+- [x] 05-03-PLAN.md — /purchase-orders?status=X searchParams drill-down (DASH-03)
 
 **UI hint**: yes
 
@@ -199,5 +199,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Catalog | 5/5 | Complete    | 2026-06-30 |
 | 3. Warehouse | 3/3 | Complete    | 2026-07-02 |
 | 4. Procurement | 4/4 | Complete    | 2026-07-04 |
-| 5. Dashboard | 2/3 | In Progress|  |
+| 5. Dashboard | 3/3 | Complete   | 2026-07-06 |
 | 6. Reports | 0/TBD | Not started | - |
