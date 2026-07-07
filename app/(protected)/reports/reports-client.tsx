@@ -1,11 +1,12 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { Download, Package } from "lucide-react"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
+import { Download, Package, ArrowLeftRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -17,6 +18,24 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { getSeverityBadge } from "@/lib/utils/severity"
+
+// Duplicated verbatim from inventory-client.tsx (Don't Hand-Roll sanctions this
+// exact duplication since neither is exported from a shared module).
+function getTypeBadgeClass(type: "STOCK_IN" | "STOCK_OUT") {
+  return type === "STOCK_IN"
+    ? "bg-green-100 text-green-700 border border-green-200 hover:bg-green-100"
+    : "bg-red-100 text-red-700 border border-red-200 hover:bg-red-100"
+}
+
+function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date))
+}
 
 export interface InventoryRow {
   id: string
@@ -65,9 +84,27 @@ interface ReportsClientProps {
 
 export default function ReportsClient({
   activeType,
+  currentParams,
   inventoryRows,
+  movementGroups,
 }: ReportsClientProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Duplicated from inventory-client.tsx's updateFilter() body shape — reads
+  // useSearchParams(), sets/deletes the key, router.push to the same pathname
+  // with the new query string (the existing ?type=movements param is preserved
+  // automatically since it's already in the current search string).
+  function updateFilter(key: string, value: string) {
+    const newParams = new URLSearchParams(searchParams.toString())
+    if (value) {
+      newParams.set(key, value)
+    } else {
+      newParams.delete(key)
+    }
+    router.push(`${pathname}?${newParams.toString()}`)
+  }
 
   return (
     <div>
@@ -83,6 +120,29 @@ export default function ReportsClient({
         </TabsList>
       </Tabs>
 
+      {activeType === "movements" && (
+        <div className="flex flex-wrap items-end gap-4 mb-6">
+          <div>
+            <label className="text-xs font-semibold mb-1 block">From</label>
+            <Input
+              type="date"
+              className="w-40"
+              value={currentParams.from ?? ""}
+              onChange={(e) => updateFilter("from", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold mb-1 block">To</label>
+            <Input
+              type="date"
+              className="w-40"
+              value={currentParams.to ?? ""}
+              onChange={(e) => updateFilter("to", e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-end mb-4">
         {activeType === "inventory" && (
           <Button
@@ -95,7 +155,102 @@ export default function ReportsClient({
             Export to Excel
           </Button>
         )}
+        {activeType === "movements" && (
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={
+              <a
+                href={`/api/reports/movements?from=${currentParams.from ?? ""}&to=${currentParams.to ?? ""}`}
+                download
+              />
+            }
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export to Excel
+          </Button>
+        )}
       </div>
+
+      {activeType === "movements" &&
+        (movementGroups.length === 0 ? (
+          <Card>
+            <div className="flex flex-col items-center py-12 text-center">
+              <ArrowLeftRight className="w-8 h-8 text-muted-foreground/30 mb-3" />
+              <p className="text-sm font-medium">
+                No transactions in this date range
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Try a different date range, or check the Inventory report for
+                current stock levels.
+              </p>
+            </div>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {movementGroups.map((group) => (
+              <Card key={group.productId}>
+                <div className="p-4 flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-semibold">
+                      {group.productName}
+                    </span>
+                    <span className="text-sm text-muted-foreground font-mono ml-2">
+                      {group.sku}
+                    </span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {group.transactions.length} transaction
+                    {group.transactions.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead style={{ width: 170 }}>Date / Time</TableHead>
+                      <TableHead style={{ width: 72 }}>Type</TableHead>
+                      <TableHead style={{ width: 64 }} className="text-right">
+                        Qty
+                      </TableHead>
+                      <TableHead style={{ width: 160 }}>Reason</TableHead>
+                      <TableHead>Notes</TableHead>
+                      <TableHead style={{ width: 120 }}>
+                        Recorded By
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {group.transactions.map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell className="text-sm w-[170px]">
+                          {formatDateTime(tx.createdAt)}
+                        </TableCell>
+                        <TableCell className="w-[72px]">
+                          <Badge className={getTypeBadgeClass(tx.type)}>
+                            {tx.type === "STOCK_IN" ? "IN" : "OUT"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right text-sm font-semibold w-16">
+                          {tx.quantity}
+                        </TableCell>
+                        <TableCell className="text-sm w-[160px]">
+                          {tx.reason}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {tx.notes ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground w-[120px]">
+                          {tx.createdBy.name ?? "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            ))}
+          </div>
+        ))}
 
       {activeType === "inventory" && (
         <Card>

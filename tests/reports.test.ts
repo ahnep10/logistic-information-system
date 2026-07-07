@@ -14,7 +14,11 @@
  */
 
 import { vi } from "vitest"
-import { resolveReportType } from "@/lib/utils/reports"
+import {
+  resolveReportType,
+  resolveDateRange,
+  groupTransactionsByProduct,
+} from "@/lib/utils/reports"
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -126,5 +130,114 @@ describe("ReportsPage — inventory tab (REPT-01)", () => {
         isActive: true,
       },
     ])
+  })
+})
+
+describe("resolveDateRange — lib/utils/reports.ts (D-07/D-08, closes T-03-11)", () => {
+  it("returns a gte/lte pair matching the given valid from/to dates", () => {
+    const { gte, lte } = resolveDateRange("2026-01-01", "2026-01-31")
+    expect(gte.toISOString().startsWith("2026-01-01")).toBe(true)
+    expect(lte.toISOString().startsWith("2026-01-31")).toBe(true)
+  })
+
+  it("falls back to the 30-day default for malformed from/to values, never throwing", () => {
+    const now = Date.now()
+    const { gte, lte } = resolveDateRange("garbage", "also-bad")
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
+    expect(Math.abs(now - thirtyDaysMs - gte.getTime())).toBeLessThan(5000)
+    expect(Math.abs(now - lte.getTime())).toBeLessThan(5000)
+  })
+
+  it("falls back to the 30-day default for a wrong-shaped date (slashes), never throwing", () => {
+    expect(() => resolveDateRange("2026/07/07", undefined)).not.toThrow()
+    const { gte, lte } = resolveDateRange("2026/07/07", undefined)
+    expect(Number.isNaN(gte.getTime())).toBe(false)
+    expect(Number.isNaN(lte.getTime())).toBe(false)
+  })
+})
+
+describe("groupTransactionsByProduct — lib/utils/reports.ts (D-09)", () => {
+  it("groups an already product-ordered transaction list into one group per product, preserving first-seen order", () => {
+    const transactions = [
+      {
+        id: "tx_1",
+        type: "STOCK_IN" as const,
+        quantity: 5,
+        reason: "Purchase Received",
+        notes: null,
+        createdAt: new Date("2026-01-02"),
+        product: { id: "prod_a", name: "Product A", sku: "SKU-A" },
+        createdBy: { name: "Alice" },
+      },
+      {
+        id: "tx_2",
+        type: "STOCK_OUT" as const,
+        quantity: 2,
+        reason: "Sale",
+        notes: null,
+        createdAt: new Date("2026-01-01"),
+        product: { id: "prod_a", name: "Product A", sku: "SKU-A" },
+        createdBy: { name: "Alice" },
+      },
+      {
+        id: "tx_3",
+        type: "STOCK_IN" as const,
+        quantity: 3,
+        reason: "Purchase Received",
+        notes: null,
+        createdAt: new Date("2026-01-01"),
+        product: { id: "prod_b", name: "Product B", sku: "SKU-B" },
+        createdBy: { name: "Bob" },
+      },
+    ]
+
+    const groups = groupTransactionsByProduct(transactions)
+
+    expect(groups).toHaveLength(2)
+    expect(groups[0].transactions).toHaveLength(2)
+    expect(groups[1].transactions).toHaveLength(1)
+  })
+})
+
+describe("ReportsPage — movements tab (REPT-02, closes T-03-11)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(prisma.product.findMany).mockResolvedValue([mockProduct] as never)
+    vi.mocked(prisma.stockTransaction.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.purchaseOrder.findMany).mockResolvedValue([] as never)
+  })
+
+  it("does not throw for malformed from/to, and the captured where.createdAt.gte/lte are valid Dates", async () => {
+    await ReportsPage({
+      searchParams: Promise.resolve({
+        type: "movements",
+        from: "not-a-date",
+        to: "also-bad",
+      }),
+    } as never)
+
+    const call = vi.mocked(prisma.stockTransaction.findMany).mock.calls[0][0] as {
+      where: { createdAt: { gte: Date; lte: Date } }
+    }
+    expect(Number.isNaN(call.where.createdAt.gte.getTime())).toBe(false)
+    expect(Number.isNaN(call.where.createdAt.lte.getTime())).toBe(false)
+  })
+
+  it("calls prisma.stockTransaction.findMany exactly once, and does not call product/purchaseOrder findMany", async () => {
+    await ReportsPage({
+      searchParams: Promise.resolve({ type: "movements" }),
+    } as never)
+
+    expect(prisma.stockTransaction.findMany).toHaveBeenCalledTimes(1)
+    expect(prisma.product.findMany).not.toHaveBeenCalled()
+    expect(prisma.purchaseOrder.findMany).not.toHaveBeenCalled()
+  })
+
+  it('does NOT call prisma.stockTransaction.findMany when type is "inventory"', async () => {
+    await ReportsPage({
+      searchParams: Promise.resolve({ type: "inventory" }),
+    } as never)
+
+    expect(prisma.stockTransaction.findMany).not.toHaveBeenCalled()
   })
 })

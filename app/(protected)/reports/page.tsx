@@ -1,6 +1,10 @@
 import { Suspense } from "react"
 import { prisma } from "@/lib/prisma"
-import { resolveReportType } from "@/lib/utils/reports"
+import {
+  resolveReportType,
+  resolveDateRange,
+  groupTransactionsByProduct,
+} from "@/lib/utils/reports"
 import ReportsClient, {
   type InventoryRow,
   type MovementGroup,
@@ -15,7 +19,7 @@ export default async function ReportsPage({ searchParams }: Props) {
   const activeType = resolveReportType(params.type)
 
   let inventoryRows: InventoryRow[] = []
-  const movementGroups: MovementGroup[] = []
+  let movementGroups: MovementGroup[] = []
   const purchaseOrderRows: PurchaseOrderRow[] = []
 
   if (activeType === "inventory") {
@@ -35,6 +39,21 @@ export default async function ReportsPage({ searchParams }: Props) {
       currentStock: p.currentStock,
       isActive: p.isActive,
     }))
+  } else if (activeType === "movements") {
+    // REPT-02/D-07/D-08: malformed from/to silently falls back to the 30-day
+    // default (closes T-03-11 for this new surface) — never throws.
+    const { gte, lte } = resolveDateRange(params.from, params.to)
+
+    const transactions = await prisma.stockTransaction.findMany({
+      where: { createdAt: { gte, lte } },
+      orderBy: [{ product: { name: "asc" } }, { createdAt: "desc" }],
+      include: {
+        product: { select: { id: true, name: true, sku: true } },
+        createdBy: { select: { name: true } },
+      },
+    })
+
+    movementGroups = groupTransactionsByProduct(transactions)
   }
 
   return (
