@@ -53,7 +53,7 @@
 - [x] **REPT-01**: Manager can generate an inventory report showing current stock level and severity tier for all products
 - [x] **REPT-02**: Manager can generate a stock movement report showing all transactions over a selected date range, grouped by product
 - [x] **REPT-03**: Manager can generate a purchase order report showing all POs with status, supplier, and total order value
-- [ ] **REPT-04**: Manager can export any report as an Excel (.xlsx) file for offline sharing and further analysis
+- [x] **REPT-04**: Manager can export any report as an Excel (.xlsx) file for offline sharing and further analysis
 
 ## v2 Requirements
 
@@ -117,7 +117,7 @@
 | REPT-01 | Phase 6 | Complete |
 | REPT-02 | Phase 6 | Complete |
 | REPT-03 | Phase 6 | Complete |
-| REPT-04 | Phase 6 | Pending |
+| REPT-04 | Phase 6 | Complete |
 
 **Coverage:**
 

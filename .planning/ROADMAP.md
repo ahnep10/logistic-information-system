@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Warehouse** - Stock transaction recording, inventory tracking, and low-stock alerts (completed 2026-07-02)
 - [x] **Phase 4: Procurement** - Purchase order lifecycle from Draft through atomic goods receipt (completed 2026-07-04)
 - [x] **Phase 5: Dashboard** - Real-time KPI summary and operational health view for managers (completed 2026-07-06)
-- [ ] **Phase 6: Reports** - Inventory, movement, and PO reports with Excel export
+- [x] **Phase 6: Reports** - Inventory, movement, and PO reports with Excel export (completed 2026-07-07)
 
 ## Phase Details
 
@@ -185,14 +185,14 @@ Plans:
   3. Manager can view a PO report listing all purchase orders with their status, supplier, and total order value.
   4. Manager can export any of the three reports as a downloadable .xlsx file.
 
-**Plans**: 1/2 plans executed
+**Plans**: 2/2 plans complete
 
 Plans:
 
 **Wave 1**
 
 - [x] 06-01-PLAN.md — Reports page: Inventory, Movements, Purchase Orders tabs (REPT-01, REPT-02, REPT-03)
-- [ ] 06-02-PLAN.md — Excel export: xlsx install + 3 Route Handlers (REPT-04)
+- [x] 06-02-PLAN.md — Excel export: xlsx install + 3 Route Handlers (REPT-04)
 
 **UI hint**: yes
 
@@ -208,4 +208,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Warehouse | 3/3 | Complete    | 2026-07-02 |
 | 4. Procurement | 4/4 | Complete    | 2026-07-04 |
 | 5. Dashboard | 3/3 | Complete    | 2026-07-06 |
-| 6. Reports | 1/2 | In Progress|  |
+| 6. Reports | 2/2 | Complete   | 2026-07-07 |
