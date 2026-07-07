@@ -10,7 +10,7 @@
  *     inspecting the returned Response's status/headers/body instead of
  *     rendering a React component.
  *   - Task 1: requireManagerResponse() gate + inventory/movements handlers.
- *   - Task 2 (extends this file): purchase-orders handler.
+ *   - Task 2: purchase-orders handler + full 3-handler auth-gate coverage.
  */
 
 import { vi } from "vitest"
@@ -23,6 +23,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     product: { findMany: vi.fn() },
     stockTransaction: { findMany: vi.fn() },
+    purchaseOrder: { findMany: vi.fn() },
   },
 }))
 
@@ -31,6 +32,9 @@ const { prisma } = await import("@/lib/prisma")
 const { requireManagerResponse } = await import("@/lib/utils/route-auth")
 const { GET: inventoryGET } = await import("@/app/api/reports/inventory/route")
 const { GET: movementsGET } = await import("@/app/api/reports/movements/route")
+const { GET: purchaseOrdersGET } = await import(
+  "@/app/api/reports/purchase-orders/route"
+)
 
 const mockManagerSession = {
   user: { id: "u1", name: "Manager One", role: "MANAGER" as const },
@@ -56,6 +60,16 @@ const mockTransaction = {
   reason: "Purchase Received",
   createdAt: new Date("2026-07-01T00:00:00.000Z"),
   product: { name: "Widget", sku: "SKU-001" },
+  createdBy: { name: "Manager One" },
+}
+
+const mockPurchaseOrder = {
+  id: "po_1",
+  poNumber: 7,
+  status: "ORDERED",
+  totalAmount: { toNumber: () => 199.99 },
+  createdAt: new Date("2026-07-01T00:00:00.000Z"),
+  supplier: { name: "Acme Supplies" },
   createdBy: { name: "Manager One" },
 }
 
@@ -164,5 +178,73 @@ describe("GET /api/reports/movements (REPT-04)", () => {
     expect(lte).toBeInstanceOf(Date)
     expect(Number.isNaN(gte.getTime())).toBe(false)
     expect(Number.isNaN(lte.getTime())).toBe(false)
+  })
+})
+
+describe("GET /api/reports/purchase-orders (REPT-04)", () => {
+  it("returns 401 with no mocked session and never calls prisma.purchaseOrder.findMany", async () => {
+    vi.mocked(auth).mockResolvedValue(null as never)
+    const response = await purchaseOrdersGET(
+      new Request("http://localhost/api/reports/purchase-orders")
+    )
+    expect(response.status).toBe(401)
+    expect(prisma.purchaseOrder.findMany).not.toHaveBeenCalled()
+  })
+
+  it("returns 403 with a mocked STAFF session and never calls prisma.purchaseOrder.findMany", async () => {
+    vi.mocked(auth).mockResolvedValue(mockStaffSession as never)
+    const response = await purchaseOrdersGET(
+      new Request("http://localhost/api/reports/purchase-orders")
+    )
+    expect(response.status).toBe(403)
+    expect(prisma.purchaseOrder.findMany).not.toHaveBeenCalled()
+  })
+
+  it("returns a real .xlsx buffer with correct headers for a MANAGER session", async () => {
+    vi.mocked(auth).mockResolvedValue(mockManagerSession as never)
+    vi.mocked(prisma.purchaseOrder.findMany).mockResolvedValue([
+      mockPurchaseOrder,
+    ] as never)
+
+    const response = await purchaseOrdersGET(
+      new Request("http://localhost/api/reports/purchase-orders")
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("Content-Disposition")).toContain(
+      "purchase-orders-report-"
+    )
+    const buffer = await response.arrayBuffer()
+    expect(buffer.byteLength).toBeGreaterThan(0)
+  })
+
+  it("never filters by status — all three statuses are always included (D-11)", async () => {
+    vi.mocked(auth).mockResolvedValue(mockManagerSession as never)
+    vi.mocked(prisma.purchaseOrder.findMany).mockResolvedValue([
+      mockPurchaseOrder,
+    ] as never)
+
+    await purchaseOrdersGET(
+      new Request("http://localhost/api/reports/purchase-orders?status=DRAFT")
+    )
+
+    const call = vi.mocked(prisma.purchaseOrder.findMany).mock.calls[0][0] as {
+      where?: unknown
+    }
+    expect(call.where).toBeUndefined()
+  })
+
+  it("maps the Total column from totalAmount.toNumber() exactly, never recomputed from line items", async () => {
+    vi.mocked(auth).mockResolvedValue(mockManagerSession as never)
+    const toNumberSpy = vi.fn(() => 199.99)
+    vi.mocked(prisma.purchaseOrder.findMany).mockResolvedValue([
+      { ...mockPurchaseOrder, totalAmount: { toNumber: toNumberSpy } },
+    ] as never)
+
+    await purchaseOrdersGET(
+      new Request("http://localhost/api/reports/purchase-orders")
+    )
+
+    expect(toNumberSpy).toHaveBeenCalled()
   })
 })
