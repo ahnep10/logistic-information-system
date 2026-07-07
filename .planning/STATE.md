@@ -3,43 +3,43 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 06
-current_phase_name: Reports
-status: verifying
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-07-07T03:51:33.254Z"
+status: complete
+stopped_at: Milestone v1.0 complete — Phase 06 verified
+last_updated: "2026-07-07T09:45:08.951Z"
 last_activity: 2026-07-07
-last_activity_desc: Phase 06 execution started
+last_activity_desc: Phase 06 verified, milestone v1.0 complete
 progress:
   total_phases: 6
   completed_phases: 6
   total_plans: 23
   completed_plans: 23
   percent: 100
+current_phase_name: Reports
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-06)
+See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Give managers a single real-time source of truth for inventory and procurement so they can make faster, data-driven decisions, reduce stock shortages, and improve operational efficiency.
-**Current focus:** Phase 06 — Reports
+**Current focus:** Milestone v1.0 complete — all 6 phases shipped
 
 ## Current Position
 
-Phase: 06 (Reports) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
-Last activity: 2026-07-07 — Phase 06 execution started
+Phase: 06 (final)
+Plan: All complete
+Status: Milestone v1.0 complete — 6/6 phases, UAT passed, 0 threats open
+Last activity: 2026-07-07 — Phase 06 verified and closed
 
-Progress: [████████░░] 83% (5/6 phases)
+Progress: [██████████] 100% (6/6 phases)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 21
+- Total plans completed: 23
 - Average duration: —
 - Total execution time: 0 hours
 
@@ -52,6 +52,7 @@ Progress: [████████░░] 83% (5/6 phases)
 | 03 | 3 | - | - |
 | 04 | 4 | - | - |
 | 05 | 3 | - | - |
+| 06 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -135,7 +136,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Verify xlsx (SheetJS) current stable version on npm before Phase 6 installation
+- [RESOLVED 2026-07-07, Phase 06 checkpoint] xlsx (SheetJS) version verified at Task 0 checkpoint — installed via CDN tarball 0.20.3, patching both flagged CVEs (see Decisions)
+- [RESOLVED 2026-07-07, Phase 06 UAT] Both human-verification items passed: exported .xlsx files open correctly and match on-screen data; non-MANAGER real-session requests to /api/reports/* correctly rejected (401/403)
+- [RESOLVED 2026-07-07, Phase 06 code review] CR-01 (critical): CSV/Excel formula injection via STAFF-writable stock-transaction notes/reason fields flowing unsanitized into xlsx exports — fixed with lib/utils/xlsx-sanitize.ts applied uniformly across all 3 export routes, independently re-confirmed at verification time
+- [RESOLVED 2026-07-07, Phase 06 code review] WR-01 (warning): purchase-orders report spread the full Prisma record into client props instead of narrowing like the other two tabs — fixed to explicit field mapping
 - [Phase 03, non-blocking] `tests/warehouse.test.ts` has `it.todo` stubs for INVT-03's negative-stock/atomic-mutation logic — behavior is proven working (direct DB test in 03-VERIFICATION.md) but has zero automated regression protection (03-REVIEW.md WR-07)
 - [Phase 03, non-blocking, tracked as T-03-11 in 03-SECURITY.md] `/inventory` page has no error handling for malformed `from`/`to` date URL params — `new Date("invalid")` + Prisma query is unguarded, a hand-crafted URL causes an unhandled 500 (03-REVIEW.md WR-02); worth a small follow-up fix
 - [Phase 04, non-blocking, pre-existing] `npm run build` fails the ESLint gate on 5 `@typescript-eslint/no-explicit-any` errors: 4 in `products-client.tsx` (Phase 02) and `stock-client.tsx` (Phase 03), plus 1 in `po-form-client.tsx` (04-03, established `zodResolver(...) as any` convention) — tests and `tsc --noEmit` pass; worth a small follow-up fix
@@ -158,6 +162,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-07T03:51:33.242Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-07-07T09:45:08.951Z
+Stopped at: Milestone v1.0 complete — Phase 06 verified (UAT 2/2 passed, 06-SECURITY.md threats_open: 0), all 6 phases done
 Resume file: None
