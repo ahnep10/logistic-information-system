@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { requireManagerResponse } from "@/lib/utils/route-auth"
+import { sanitizeRow } from "@/lib/utils/xlsx-sanitize"
 import * as XLSX from "xlsx"
 
 // Regex-then-fallback date validation — duplicated intentionally from
@@ -44,15 +45,23 @@ export async function GET(request: Request) {
     },
   })
 
-  const rows = transactions.map((t) => ({
-    Product: t.product.name,
-    SKU: t.product.sku,
-    Type: t.type,
-    Quantity: t.quantity,
-    Reason: t.reason,
-    Date: t.createdAt.toISOString().slice(0, 10),
-    "Recorded By": t.createdBy.name,
-  }))
+  // sanitizeRow neutralizes leading =/+/-/@/tab/CR on every string cell to
+  // prevent CSV/Excel formula injection (CWE-1236) — 06-REVIEW.md CR-01.
+  // Reason/Product/SKU/"Recorded By" are all free-text-adjacent fields set
+  // by an authenticated STAFF user via recordStockIn/recordStockOut with no
+  // formula-safe restriction, and later render in a MANAGER's exported
+  // workbook — this export does not currently include a `notes` column.
+  const rows = transactions.map((t) =>
+    sanitizeRow({
+      Product: t.product.name,
+      SKU: t.product.sku,
+      Type: t.type,
+      Quantity: t.quantity,
+      Reason: t.reason,
+      Date: t.createdAt.toISOString().slice(0, 10),
+      "Recorded By": t.createdBy.name,
+    })
+  )
 
   const wb = XLSX.utils.book_new()
   const ws = XLSX.utils.json_to_sheet(rows)

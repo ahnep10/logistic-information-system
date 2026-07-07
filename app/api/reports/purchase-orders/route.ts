@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { requireManagerResponse } from "@/lib/utils/route-auth"
 import { getStatusBadge } from "@/lib/utils/po-status"
 import { formatPONumber } from "@/lib/utils/po-number"
+import { sanitizeRow } from "@/lib/utils/xlsx-sanitize"
 import * as XLSX from "xlsx"
 
 export async function GET(request: Request) {
@@ -17,16 +18,20 @@ export async function GET(request: Request) {
     },
   })
 
-  const rows = purchaseOrders.map((po) => ({
-    "PO #": formatPONumber(po.poNumber),
-    Supplier: po.supplier.name,
-    Status: getStatusBadge(po.status).label,
-    // .toNumber() converts the Prisma Decimal before it reaches json_to_sheet
-    // (Pitfall 4) -- never recomputed from line items.
-    Total: po.totalAmount.toNumber(),
-    Created: po.createdAt.toISOString().slice(0, 10),
-    "Created By": po.createdBy.name,
-  }))
+  // sanitizeRow neutralizes leading =/+/-/@/tab/CR on every string cell to
+  // prevent CSV/Excel formula injection (CWE-1236) — 06-REVIEW.md CR-01.
+  const rows = purchaseOrders.map((po) =>
+    sanitizeRow({
+      "PO #": formatPONumber(po.poNumber),
+      Supplier: po.supplier.name,
+      Status: getStatusBadge(po.status).label,
+      // .toNumber() converts the Prisma Decimal before it reaches json_to_sheet
+      // (Pitfall 4) -- never recomputed from line items.
+      Total: po.totalAmount.toNumber(),
+      Created: po.createdAt.toISOString().slice(0, 10),
+      "Created By": po.createdBy.name,
+    })
+  )
 
   const wb = XLSX.utils.book_new()
   const ws = XLSX.utils.json_to_sheet(rows)
