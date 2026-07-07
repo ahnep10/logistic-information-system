@@ -185,7 +185,15 @@ Plans:
   3. Manager can view a PO report listing all purchase orders with their status, supplier, and total order value.
   4. Manager can export any of the three reports as a downloadable .xlsx file.
 
-**Plans**: TBD
+**Plans**: 0/2 plans complete
+
+Plans:
+
+**Wave 1**
+
+- [ ] 06-01-PLAN.md — Reports page: Inventory, Movements, Purchase Orders tabs (REPT-01, REPT-02, REPT-03)
+- [ ] 06-02-PLAN.md — Excel export: xlsx install + 3 Route Handlers (REPT-04)
+
 **UI hint**: yes
 
 ## Progress
@@ -199,5 +207,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Catalog | 5/5 | Complete    | 2026-06-30 |
 | 3. Warehouse | 3/3 | Complete    | 2026-07-02 |
 | 4. Procurement | 4/4 | Complete    | 2026-07-04 |
-| 5. Dashboard | 3/3 | Complete   | 2026-07-06 |
-| 6. Reports | 0/TBD | Not started | - |
+| 5. Dashboard | 3/3 | Complete    | 2026-07-06 |
+| 6. Reports | 0/2 | Not started | - |
