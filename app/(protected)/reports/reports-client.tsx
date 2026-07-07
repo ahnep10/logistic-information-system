@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
-import { Download, Package, ArrowLeftRight } from "lucide-react"
+import { Download, Package, ArrowLeftRight, ClipboardList } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,17 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { getSeverityBadge } from "@/lib/utils/severity"
+import { getStatusBadge, type POStatus } from "@/lib/utils/po-status"
+import { formatPONumber } from "@/lib/utils/po-number"
+
+// Duplicated verbatim from purchase-orders-client.tsx's own currencyFormatter
+// instance, per UI-SPEC's explicit sanction rather than sharing a new util for
+// one constant.
+const currencyFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  minimumFractionDigits: 0,
+})
 
 // Duplicated verbatim from inventory-client.tsx (Don't Hand-Roll sanctions this
 // exact duplication since neither is exported from a shared module).
@@ -67,7 +78,7 @@ export interface MovementGroup {
 export interface PurchaseOrderRow {
   id: string
   poNumber: number
-  status: "DRAFT" | "ORDERED" | "RECEIVED"
+  status: POStatus
   totalAmount: number
   createdAt: Date
   supplier: { name: string }
@@ -87,6 +98,7 @@ export default function ReportsClient({
   currentParams,
   inventoryRows,
   movementGroups,
+  purchaseOrderRows,
 }: ReportsClientProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -166,6 +178,17 @@ export default function ReportsClient({
                 download
               />
             }
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export to Excel
+          </Button>
+        )}
+        {activeType === "purchase-orders" && (
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<a href="/api/reports/purchase-orders" download />}
           >
             <Download className="h-4 w-4 mr-2" />
             Export to Excel
@@ -319,6 +342,74 @@ export default function ReportsClient({
                         >
                           {row.isActive ? "Active" : "Inactive"}
                         </Badge>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      {activeType === "purchase-orders" && (
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={{ width: 100 }}>PO #</TableHead>
+                <TableHead>Supplier</TableHead>
+                <TableHead style={{ width: 100 }}>Status</TableHead>
+                <TableHead style={{ width: 140 }} className="text-right">
+                  Total
+                </TableHead>
+                <TableHead style={{ width: 140 }}>Created</TableHead>
+                <TableHead style={{ width: 120 }}>Created By</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {purchaseOrderRows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6}>
+                    <div className="flex flex-col items-center py-12 text-center">
+                      <ClipboardList className="w-8 h-8 text-muted-foreground/30 mb-3" />
+                      <p className="text-sm font-medium">
+                        No purchase orders yet
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Create a purchase order to start tracking procurement.
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                purchaseOrderRows.map((po) => {
+                  const badge = getStatusBadge(po.status)
+                  return (
+                    <TableRow key={po.id}>
+                      <TableCell className="text-sm font-medium">
+                        {formatPONumber(po.poNumber)}
+                      </TableCell>
+                      <TableCell className="text-sm font-medium">
+                        {po.supplier.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={badge.className}>
+                          {badge.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right text-sm font-semibold">
+                        {currencyFormatter.format(po.totalAmount)}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(po.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {po.createdBy.name ?? "—"}
                       </TableCell>
                     </TableRow>
                   )

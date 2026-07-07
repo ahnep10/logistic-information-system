@@ -241,3 +241,47 @@ describe("ReportsPage — movements tab (REPT-02, closes T-03-11)", () => {
     expect(prisma.stockTransaction.findMany).not.toHaveBeenCalled()
   })
 })
+
+describe("ReportsPage — purchase-orders tab (REPT-03)", () => {
+  const mockPO = {
+    id: "po_1",
+    poNumber: 1,
+    status: "DRAFT",
+    totalAmount: { toNumber: () => 150000 },
+    createdAt: new Date("2026-01-01"),
+    supplier: { name: "Acme Supplies" },
+    createdBy: { name: "Alice" },
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(prisma.product.findMany).mockResolvedValue([mockProduct] as never)
+    vi.mocked(prisma.stockTransaction.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.purchaseOrder.findMany).mockResolvedValue([mockPO] as never)
+  })
+
+  it("calls prisma.purchaseOrder.findMany exactly once with no status key in where, and does not call product/stockTransaction findMany", async () => {
+    await ReportsPage({
+      searchParams: Promise.resolve({ type: "purchase-orders" }),
+    } as never)
+
+    expect(prisma.purchaseOrder.findMany).toHaveBeenCalledTimes(1)
+    const call = vi.mocked(prisma.purchaseOrder.findMany).mock.calls[0][0] as {
+      where?: Record<string, unknown>
+    }
+    expect(call?.where?.status).toBeUndefined()
+    expect(prisma.product.findMany).not.toHaveBeenCalled()
+    expect(prisma.stockTransaction.findMany).not.toHaveBeenCalled()
+  })
+
+  it("returns props.purchaseOrderRows[].totalAmount as a plain number (Decimal.toNumber() result)", async () => {
+    const element = await ReportsPage({
+      searchParams: Promise.resolve({ type: "purchase-orders" }),
+    } as never)
+
+    const rows = reportsClientProps(element as never)
+      .purchaseOrderRows as Array<{ totalAmount: unknown }>
+    expect(typeof rows[0].totalAmount).toBe("number")
+    expect(rows[0].totalAmount).toBe(150000)
+  })
+})

@@ -20,7 +20,7 @@ export default async function ReportsPage({ searchParams }: Props) {
 
   let inventoryRows: InventoryRow[] = []
   let movementGroups: MovementGroup[] = []
-  const purchaseOrderRows: PurchaseOrderRow[] = []
+  let purchaseOrderRows: PurchaseOrderRow[] = []
 
   if (activeType === "inventory") {
     // REPT-01: all products, active and inactive — no isActive filter (D-Claude's
@@ -54,6 +54,20 @@ export default async function ReportsPage({ searchParams }: Props) {
     })
 
     movementGroups = groupTransactionsByProduct(transactions)
+  } else {
+    // REPT-03/D-10/D-11: all three statuses always included, no status filter.
+    const purchaseOrders = await prisma.purchaseOrder.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        supplier: { select: { name: true } },
+        createdBy: { select: { name: true } },
+      },
+    })
+
+    purchaseOrderRows = purchaseOrders.map((po) => ({
+      ...po,
+      totalAmount: po.totalAmount.toNumber(),
+    }))
   }
 
   return (
