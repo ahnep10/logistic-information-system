@@ -65,8 +65,13 @@ export default async function ReportsPage({ searchParams }: Props) {
     })
 
     purchaseOrderRows = purchaseOrders.map((po) => ({
-      ...po,
+      id: po.id,
+      poNumber: po.poNumber,
+      status: po.status,
       totalAmount: po.totalAmount.toNumber(),
+      createdAt: po.createdAt,
+      supplier: po.supplier,
+      createdBy: po.createdBy,
     }))
   }
 
