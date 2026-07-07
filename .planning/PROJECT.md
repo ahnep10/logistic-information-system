@@ -22,16 +22,17 @@ Give managers a single real-time source of truth for inventory and procurement s
 - ✓ Staff can create purchase orders with line items and submit them (Draft → Ordered) — Phase 04
 - ✓ Staff can receive goods against a purchase order (Ordered → Received) and update inventory — Phase 04 (row-locked atomic goods-receipt transaction)
 - ✓ PO status is visible across all lifecycle stages (Draft, Ordered, Received) — Phase 04 (three-state PO detail page)
+- ✓ Manager sees a dashboard with real-time KPIs (products, suppliers, stock movements today, low-stock count) — Phase 05
+- ✓ Low-stock count drills into the filtered inventory list — Phase 05 (DASH-02)
+- ✓ Dashboard shows PO status summary (Draft/Ordered/Received counts) — Phase 05 (DASH-03)
+- ✓ Manager can generate an inventory report (stock level + severity tier, all products) — Phase 06 (REPT-01)
+- ✓ Manager can generate a stock movement report for a selected date range, grouped by product — Phase 06 (REPT-02)
+- ✓ Manager can generate a purchase order report (status, supplier, total value) — Phase 06 (REPT-03)
+- ✓ Manager can export any report as a downloadable .xlsx file — Phase 06 (REPT-04, `xlsx`/SheetJS)
 
 ### Active
 
-**Management Dashboard & Reporting**
-- [ ] Dashboard displays real-time KPIs: total products, total suppliers, stock movements today, low-stock count
-- [ ] Dashboard shows real-time inventory health and low-stock alerts
-- [ ] Dashboard shows purchase order status summary (Draft/Ordered/Received counts)
-- [ ] Manager can generate inventory reports (current stock levels per product)
-- [ ] Manager can generate stock movement reports (transactions over a date range)
-- [ ] Manager can generate purchase order reports (PO list with status and value)
+None — all v1.0 milestone requirements are validated. Remaining scope is deferred to v2 (see REQUIREMENTS.md Deferred section: DASH-V2-01/02, REPT-V2-01/02, PROC-V2-01).
 
 ### Out of Scope
 
@@ -71,6 +72,9 @@ Give managers a single real-time source of truth for inventory and procurement s
 | `zodResolver(schema) as any` cast in React Hook Form `useForm` calls | Resolves a `z.preprocess`/RHF resolver type mismatch on numeric fields; matches existing convention in `products-client.tsx` | Applied Phase 02–03; follow same cast when adding new numeric-coerced forms |
 | Row-locked transaction (`SELECT ... FOR UPDATE` + validate + write, all inside one `prisma.$transaction`) for any Server Action whose write depends on a prior read | A plain status-filtered `updateMany`/`deleteMany` (CR-01) only protects actions that write the SAME column their guard checks; `confirmPurchaseOrder`'s status write didn't protect its D-08/D-16 validation (read on `lineItems`/`supplier`, write on `status`) from a concurrent edit — closed by moving read+validate+write into one locked transaction (Phase 04 UAT, discovered via a real-Postgres concurrency test) | Applied Phase 04; use this pattern for any future action combining a stale-read validation with a delayed write |
 | Base UI `Select.Root` requires an `items` prop for `Select.Value` to show a label on initial render | Without `items`, `Select.Value` displays the raw `value` until the popup's `Select.Item` has mounted at least once — affects any edit-mode Select pre-populated with a real value, not just deactivated references | Applied to `po-form-client.tsx` supplierId Select (Phase 04); other pre-populated Selects app-wide (e.g. `products-client.tsx` categoryId) may have the same latent bug — worth an audit pass |
+| `xlsx` (SheetJS) installed via CDN tarball (`xlsx@0.20.3`), not the npm registry build | npm registry build frozen at `0.18.5` since 2022 with 2 disclosed CVEs; CDN tarball patches both — approved via a blocking `checkpoint:human-verify` package-legitimacy gate | Applied Phase 06; use the same CDN-tarball pattern for any future SheetJS-family dependency |
+| Sanitize every string cell before `XLSX.utils.json_to_sheet` (`lib/utils/xlsx-sanitize.ts`) | Free-text fields writable by lower-privileged roles (e.g. stock-transaction `notes`/`reason`) can carry CSV/Excel formula-injection payloads (CWE-1236) that execute when a manager opens the exported file — found via post-execution code review, not planned upfront | Applied Phase 06 to all 3 `/api/reports/*` export routes; apply `sanitizeRow`/`sanitizeCell` to any future spreadsheet export touching user-writable text |
+| `/api/*` Route Handlers self-enforce auth via `requireManagerResponse()` as the first statement | `middleware.ts`'s matcher explicitly excludes `/api` — Route Handlers get zero protection from the page-level middleware guard | Applied Phase 06 to all 3 report export routes; required pattern for any new `/api/*` handler in this app |
 
 ## Evolution
 
@@ -90,4 +94,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-05 after Phase 04 (procurement)*
+*Last updated: 2026-07-07 after Phase 06 (reports)*
