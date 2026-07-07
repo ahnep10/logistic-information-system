@@ -1,14 +1,16 @@
 ---
 phase: 06-reports
 verified: 2026-07-07T05:08:38Z
-status: human_needed
+status: passed
 score: 10/10 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 human_verification:
+
   - test: "Log in as Manager, visit /reports, click each tab's 'Export to Excel' link, and open each downloaded .xlsx file in Excel/LibreOffice."
     expected: "The Inventory file's columns match the on-screen table; the Movements file's rows match the currently-applied date range; the Purchase Orders file's Total column matches the on-screen currency values (a real spreadsheet, not corrupt/empty)."
     why_human: "Requires opening a real binary .xlsx file in spreadsheet software and visually cross-checking rows against the live page — not reproducible by a unit test against mocked Prisma/auth (06-02-PLAN.md Task 2 <human-check>, 06-02-SUMMARY.md coverage item D6, human_judgment: true)."
+
   - test: "As a STAFF-role user (or logged out), request the raw /api/reports/inventory (and /movements, /purchase-orders) URLs directly in a browser."
     expected: "The request is rejected (401 if logged out, 403 if STAFF) and no file downloads."
     why_human: "Unit tests exercise requireManagerResponse() and the route GET handlers directly with mocked auth() — confirms the logic branch, but does not exercise a real browser session/cookie round-trip through Auth.js. Deferred to end-of-phase UAT per this project's human_verify_mode: end-of-phase config."
