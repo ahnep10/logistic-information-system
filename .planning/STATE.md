@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 06
-status: complete
-stopped_at: Milestone v1.0 complete — Phase 06 verified
-last_updated: "2026-07-07T09:45:08.951Z"
-last_activity: 2026-07-07
-last_activity_desc: Phase 06 verified, milestone v1.0 complete
+current_phase: 0
+status: Awaiting next milestone
+stopped_at: "Milestone v1.0 complete — Phase 06 verified (UAT 2/2 passed, 06-SECURITY.md threats_open: 0), all 6 phases done"
+last_updated: "2026-07-09T13:50:18.827Z"
+last_activity: 2026-07-09
+last_activity_desc: Milestone v1.0 completed and archived
 progress:
   total_phases: 6
   completed_phases: 6
@@ -28,12 +28,10 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 ## Current Position
 
-Phase: 06 (final)
-Plan: All complete
-Status: Milestone v1.0 complete — 6/6 phases, UAT passed, 0 threats open
-Last activity: 2026-07-07 — Phase 06 verified and closed
-
-Progress: [██████████] 100% (6/6 phases)
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-09 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
@@ -165,3 +163,7 @@ None yet.
 Last session: 2026-07-07T09:45:08.951Z
 Stopped at: Milestone v1.0 complete — Phase 06 verified (UAT 2/2 passed, 06-SECURITY.md threats_open: 0), all 6 phases done
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

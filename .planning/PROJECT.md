@@ -32,7 +32,13 @@ Give managers a single real-time source of truth for inventory and procurement s
 
 ### Active
 
-None — all v1.0 milestone requirements are validated. Remaining scope is deferred to v2 (see REQUIREMENTS.md Deferred section: DASH-V2-01/02, REPT-V2-01/02, PROC-V2-01).
+Candidates for next milestone (unconfirmed — finalize scope via `/gsd-new-milestone`):
+
+- [ ] Dashboard real-time auto-refresh (DASH-V2-01)
+- [ ] KPI trend sparklines on dashboard cards (DASH-V2-02)
+- [ ] PDF export for reports (REPT-V2-01)
+- [ ] Per-product movement mini-history widget (REPT-V2-02)
+- [ ] Auto-generated Draft PO on low stock (PROC-V2-01, requires approval-workflow design)
 
 ### Out of Scope
 
@@ -47,7 +53,9 @@ None — all v1.0 milestone requirements are validated. Remaining scope is defer
 - Academic project with a one-semester timeline — scope is deliberately bounded
 - Target users are SME distribution businesses replacing spreadsheets/paper-based processes
 - Three user roles in practice: warehouse staff (transactions), procurement/admin (POs and suppliers), operations manager (dashboard and reports)
-- No existing codebase — greenfield
+- v1.0 MVP shipped 2026-07-07: ~10.9k LOC TypeScript across 6 phases (Foundation/Auth, Catalog, Warehouse, Procurement, Dashboard, Reports); Next.js 15 + PostgreSQL 16 + Prisma 6 + Auth.js v5 + shadcn/ui (base-nova/base-ui) + Recharts + xlsx (SheetJS CDN build)
+- 29/29 v1 requirements validated; zero open security threats at milestone close
+- Known non-blocking tech debt carried into next milestone: no automated regression tests for INVT-03 negative-stock logic (03-REVIEW.md WR-07); `/inventory` unguarded against malformed date URL params (T-03-11); 5 pre-existing `@typescript-eslint/no-explicit-any` ESLint errors (documented `zodResolver(...) as any` convention); Base UI `Select` raw-value-on-initial-render bug only fixed on `po-form-client.tsx`'s supplierId field, not audited app-wide
 
 ## Constraints
 
@@ -60,9 +68,9 @@ None — all v1.0 milestone requirements are validated. Remaining scope is defer
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Exclude delivery tracking from MVP | Keeps scope achievable within semester timeline | — Pending |
-| Single warehouse for MVP | Reduces complexity; sufficient for SME target | — Pending |
-| No ERP integration | Simplifies architecture; not needed by SME target segment | — Pending |
+| Exclude delivery tracking from MVP | Keeps scope achievable within semester timeline | ✓ Good — held through v1.0, no scope pressure surfaced |
+| Single warehouse for MVP | Reduces complexity; sufficient for SME target | ✓ Good — held through v1.0, no multi-warehouse need surfaced |
+| No ERP integration | Simplifies architecture; not needed by SME target segment | ✓ Good — held through v1.0, standalone app shipped as planned |
 | Manager-only mutations for catalog (categories, products, suppliers) | CONTEXT.md confirms Staff is read-only on master data; prevents accidental catalog corruption by non-privileged users | Applied in Phase 01–02; `requireManager()` in all three action files |
 | Auth.js v5 two-file split: `auth.config.ts` (Edge-safe) + `lib/auth.ts` (Node.js only) | Next.js 15 middleware runs on Edge runtime — only `auth.config.ts` can be imported there | Applied Phase 01; pattern must be maintained across all phases |
 | shadcn/ui v4 base-nova style (@base-ui/react) — render prop pattern, not `asChild` | `asChild` belongs to Radix UI (v3); base-ui v4 uses `render={<Component>}` on Dialog/AlertDialog trigger/close elements | Applied Phase 01–02; zero `asChild` usage confirmed |
@@ -94,4 +102,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-07 after Phase 06 (reports)*
+*Last updated: 2026-07-09 after v1.0 milestone completion*
