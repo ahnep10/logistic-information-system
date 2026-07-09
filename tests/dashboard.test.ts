@@ -15,9 +15,10 @@ vi.mock("@/lib/prisma", () => ({
     product: {
       count: vi.fn(),
       fields: { reorderThreshold: "REORDER_THRESHOLD_FIELDREF" },
+      findMany: vi.fn(),
     },
     supplier: { count: vi.fn() },
-    stockTransaction: { count: vi.fn() },
+    stockTransaction: { count: vi.fn(), groupBy: vi.fn() },
     purchaseOrder: { groupBy: vi.fn() },
   },
 }))
@@ -74,6 +75,10 @@ describe("fillPoStatusCounts — lib/utils/dashboard.ts (groupBy zero-fill)", ()
 describe("DashboardPage — app/(protected)/dashboard/page.tsx (KPI query shapes)", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Defaults keep the 3 pre-existing tests passing unmodified: an empty
+    // topSellingProducts pipeline never calls .map() on undefined.
+    vi.mocked(prisma.stockTransaction.groupBy).mockResolvedValue([] as never)
+    vi.mocked(prisma.product.findMany).mockResolvedValue([] as never)
   })
 
   afterEach(() => {
@@ -144,5 +149,29 @@ describe("DashboardPage — app/(protected)/dashboard/page.tsx (KPI query shapes
     }
     expect(call.where.createdAt.gte.toISOString()).toBe("2026-07-06T00:00:00.000Z")
     expect(call.where.createdAt.lte.toISOString()).toBe("2026-07-06T23:59:59.999Z")
+  })
+
+  // Top Selling Products: groupBy(STOCK_OUT, by productId) mapped through a
+  // product.findMany name lookup, order preserved, names correctly joined.
+  it("maps stockTransaction.groupBy + product.findMany into topSellingProducts", async () => {
+    vi.mocked(prisma.product.count).mockResolvedValue(0)
+    vi.mocked(prisma.supplier.count).mockResolvedValue(0)
+    vi.mocked(prisma.stockTransaction.count).mockResolvedValue(0)
+    vi.mocked(prisma.purchaseOrder.groupBy).mockResolvedValue([] as never)
+    vi.mocked(prisma.stockTransaction.groupBy).mockResolvedValue([
+      { productId: "p1", _sum: { quantity: 50 } },
+      { productId: "p2", _sum: { quantity: 30 } },
+    ] as never)
+    vi.mocked(prisma.product.findMany).mockResolvedValue([
+      { id: "p1", name: "Product One" },
+      { id: "p2", name: "Product Two" },
+    ] as never)
+
+    const element = await DashboardPage()
+
+    expect(element.props.topSellingProducts).toEqual([
+      { productId: "p1", name: "Product One", totalSold: 50 },
+      { productId: "p2", name: "Product Two", totalSold: 30 },
+    ])
   })
 })
