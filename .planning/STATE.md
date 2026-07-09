@@ -99,6 +99,12 @@ Carried forward from v1.0 (non-blocking tech debt for next milestone to consider
 - Base UI Select `items`-prop fix (raw-value-on-initial-render bug) only applied to `po-form-client.tsx`'s supplierId Select — other edit-mode Selects app-wide (e.g. `products-client.tsx` categoryId) not yet audited
 - Housekeeping: `backup_before_phase3.sql` and `.planning/research/.cache/*.json` remain untracked in the working tree — worth a cleanup pass
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260709-ti6 | Seed demo data (categories, products, suppliers, staff, stock transactions, purchase orders) and add Top Selling Products chart to dashboard | 2026-07-09 | ac50db7 | [260709-ti6-seed-demo-data-categories-products-suppl](./quick/260709-ti6-seed-demo-data-categories-products-suppl/) |
+
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
@@ -111,8 +117,8 @@ Carried forward from v1.0 (non-blocking tech debt for next milestone to consider
 
 ## Session Continuity
 
-Last session: 2026-07-07T09:45:08.951Z
-Stopped at: Milestone v1.0 complete — Phase 06 verified (UAT 2/2 passed, 06-SECURITY.md threats_open: 0), all 6 phases done
+Last session: 2026-07-09T22:30:23.000Z
+Stopped at: Completed quick task 260709-ti6: Seed demo data and add Top Selling Products chart to dashboard
 Resume file: None
 
 ## Operator Next Steps
